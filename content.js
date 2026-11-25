@@ -415,6 +415,24 @@ window.SITE_CONTENT = {
       "updatedAt": 1795608419619,
       "createdAt": 1795608419619,
       "id": "pmww2w3s3g3am"
+    },
+    {
+      "title": "Meeting Project set-up pabrik baru",
+      "category": "Meeting",
+      "date": "2026-08-06",
+      "summary": "Persiapan Project pembangunan pabrik baru PT. Chocomory Cokelat Persada di Padalarang ",
+      "body": "Membuat gambaran garis besar dalam membuat Layouting pabrik baru :\n1. Manpower Planning\n2. Utility Pabrik\n3. Legal\n4. Line Balancing \n5. Perhitungan Output\n6. Kapasitas Gudang\n7. SOP\n8. Mesin Baru - semi otomatis\n9. Budgeting",
+      "link": "",
+      "cover": "404e176e3f454e910c66c228439412c8",
+      "photos": [
+        {
+          "id": "404e176e3f454e910c66c228439412c8",
+          "caption": ""
+        }
+      ],
+      "updatedAt": 1795608808081,
+      "createdAt": 1795608808081,
+      "id": "pmww34fipm8j1"
     }
   ],
   "private": {}
@@ -452,5 +470,6 @@ window.SITE_ASSETS = {
   "5eabc9cd28b48f6ebe62eff74f5bd23f": "assets/img/5eabc9cd28b48f6ebe62eff74f5bd23f.jpg",
   "9da54f3a4a78ba29b27305c04a14dcc0": "assets/img/9da54f3a4a78ba29b27305c04a14dcc0.jpg",
   "6accee7d72a9b38c2c1266f167f968da": "assets/img/6accee7d72a9b38c2c1266f167f968da.jpg",
-  "4d20efee2906b37bae45f853d46f3d9f": "assets/img/4d20efee2906b37bae45f853d46f3d9f.jpg"
+  "4d20efee2906b37bae45f853d46f3d9f": "assets/img/4d20efee2906b37bae45f853d46f3d9f.jpg",
+  "404e176e3f454e910c66c228439412c8": "assets/img/404e176e3f454e910c66c228439412c8.jpg"
 };
