@@ -305,33 +305,41 @@ window.SITE_CONTENT = {
       "id": "pmwvxjhan260a"
     },
     {
-      "body": "Pembukaan toko baru di Braga, berkolaborasi dengan customer dan figur anime, membuat toko semakin ramai dan meriah. Pembukaan toko ini memberikan akses lebih besar untuk mengenalkan produk Chocomory sebagai oleh-oleh khas Bandung, yaitu Tiramisusu.",
+      "title": "Pembukaan Toko Satelit Baru (Braga-BCW)",
       "category": "GO - Toko",
-      "cover": "41d8e564560131137d6130b0026d7c31",
-      "createdAt": 1795599656357,
       "date": "2026-06-14",
+      "summary": "Grand opening toko satelit di Braga – BCW (Braga City Walk).",
+      "body": "Pembukaan toko baru di Braga, berkolaborasi dengan customer dan figur anime, membuat toko semakin ramai dan meriah. Pembukaan toko ini memberikan akses lebih besar untuk mengenalkan produk Chocomory sebagai oleh-oleh khas Bandung, yaitu Tiramisusu.",
       "link": "",
+      "cover": "41d8e564560131137d6130b0026d7c31",
       "photos": [
         {
-          "caption": "",
-          "id": "839b80fabd028926e453720275090381"
+          "id": "839b80fabd028926e453720275090381",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "02bd2e534253253083b1f4d806fefc18"
+          "id": "02bd2e534253253083b1f4d806fefc18",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "8d1ce0c8bdc8ae21ccd777d45320ff48"
+          "id": "4d20efee2906b37bae45f853d46f3d9f",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "41d8e564560131137d6130b0026d7c31"
+          "id": "8d1ce0c8bdc8ae21ccd777d45320ff48",
+          "caption": ""
+        },
+        {
+          "id": "41d8e564560131137d6130b0026d7c31",
+          "caption": ""
+        },
+        {
+          "id": "6accee7d72a9b38c2c1266f167f968da",
+          "caption": ""
         }
       ],
-      "summary": "Grand opening toko satelit di Braga – BCW (Braga City Walk).",
-      "title": "Pembukaan Toko Satelit Baru (Braga-BCW)",
-      "updatedAt": 1795599656357,
+      "updatedAt": 1795608522793,
+      "createdAt": 1795599656357,
       "id": "pmwvxoa05fllk"
     },
     {
@@ -442,5 +450,7 @@ window.SITE_ASSETS = {
   "f55e5dfc75d57fe306ee52f1ec24497c": "assets/img/f55e5dfc75d57fe306ee52f1ec24497c.jpg",
   "2f3cf949fc1d578040e03642a1285317": "assets/img/2f3cf949fc1d578040e03642a1285317.jpg",
   "5eabc9cd28b48f6ebe62eff74f5bd23f": "assets/img/5eabc9cd28b48f6ebe62eff74f5bd23f.jpg",
-  "9da54f3a4a78ba29b27305c04a14dcc0": "assets/img/9da54f3a4a78ba29b27305c04a14dcc0.jpg"
+  "9da54f3a4a78ba29b27305c04a14dcc0": "assets/img/9da54f3a4a78ba29b27305c04a14dcc0.jpg",
+  "6accee7d72a9b38c2c1266f167f968da": "assets/img/6accee7d72a9b38c2c1266f167f968da.jpg",
+  "4d20efee2906b37bae45f853d46f3d9f": "assets/img/4d20efee2906b37bae45f853d46f3d9f.jpg"
 };
