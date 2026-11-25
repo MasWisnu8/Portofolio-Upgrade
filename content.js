@@ -385,6 +385,28 @@ window.SITE_CONTENT = {
       "updatedAt": 1795608221397,
       "createdAt": 1795608221397,
       "id": "pmww2rutxjmjb"
+    },
+    {
+      "title": "Trial Mesin untuk produksi - Baro (MTA)",
+      "category": "Trial Mesin",
+      "date": "2026-04-28",
+      "summary": "Melakukan trial Mesin skala produksi 1 Batch",
+      "body": "Trial mesin untuk menghitung :\n1. Speed Mesin / Hour\n2. Kapasitas Mesin\n3. Utility Mesin\n4. Kebutuhan Manpower untuk mesin\n5. Tools pendukung lainnya",
+      "link": "",
+      "cover": "9da54f3a4a78ba29b27305c04a14dcc0",
+      "photos": [
+        {
+          "id": "5eabc9cd28b48f6ebe62eff74f5bd23f",
+          "caption": ""
+        },
+        {
+          "id": "9da54f3a4a78ba29b27305c04a14dcc0",
+          "caption": ""
+        }
+      ],
+      "updatedAt": 1795608419619,
+      "createdAt": 1795608419619,
+      "id": "pmww2w3s3g3am"
     }
   ],
   "private": {}
@@ -418,5 +440,7 @@ window.SITE_ASSETS = {
   "09e22d70b216143501a41f67df80855a": "assets/img/09e22d70b216143501a41f67df80855a.jpg",
   "df94159b06a075559ede2f3b0959df05": "assets/img/df94159b06a075559ede2f3b0959df05.jpg",
   "f55e5dfc75d57fe306ee52f1ec24497c": "assets/img/f55e5dfc75d57fe306ee52f1ec24497c.jpg",
-  "2f3cf949fc1d578040e03642a1285317": "assets/img/2f3cf949fc1d578040e03642a1285317.jpg"
+  "2f3cf949fc1d578040e03642a1285317": "assets/img/2f3cf949fc1d578040e03642a1285317.jpg",
+  "5eabc9cd28b48f6ebe62eff74f5bd23f": "assets/img/5eabc9cd28b48f6ebe62eff74f5bd23f.jpg",
+  "9da54f3a4a78ba29b27305c04a14dcc0": "assets/img/9da54f3a4a78ba29b27305c04a14dcc0.jpg"
 };
