@@ -1572,7 +1572,8 @@ function writePaths(paths, src){
   run.catch(e=>dlog('write-err',{paths, code:e?.code||null, msg:String(e?.message||e).slice(0,200)}));
   writeQ=run.catch(()=>{}); return run;
 }
-function errMsg(err){ const c=err?.code; return c==='quota_exceeded'?'Penyimpanan penuh':c==='offline'?'Tidak terhubung — tidak bisa menyimpan':c==='invalid_argument'?'Akunmu tidak punya izin menyimpan':c==='verify_failed'?'Server belum menerima perubahan — coba Simpan lagi':'Gagal menyimpan'+(c?' ('+c+')':'')+' — coba lagi'; }
+const NO_WRITE='Token GitHub belum punya izin menyimpan (Contents: Read and write). Keluar, lalu Atur ulang login dengan token baru.';
+function errMsg(err){ const c=err?.code; if(err?.status===403) return NO_WRITE; return c==='quota_exceeded'?'Penyimpanan penuh':c==='offline'?'Tidak terhubung — tidak bisa menyimpan':c==='invalid_argument'?'Akunmu tidak punya izin menyimpan':c==='verify_failed'?'Server belum menerima perubahan — coba Simpan lagi':'Gagal menyimpan'+(c?' ('+c+')':'')+' — coba lagi'; }
 async function startEdit(key, focusPath){
   if(editSec===key) return;
   if(editSec){ if(dirty){ if(!(await saveSection())) return; } else { editSec=null; backup=null; } }
@@ -2156,7 +2157,7 @@ function ghGateBody(head,msg,guestLink){
       if(p1.value!==p2.value) return msg.textContent='Password dan ulangannya tidak sama.';
       btn.disabled=true; btn.textContent='Menyimpan…';
       try{ await ghLogin(tok.value,{setup:true}); await ghSaveAuth(user.value,p1.value); ghGateSetup=false; window.scrollTo(0,0); toast('Login admin tersimpan ✓ Berikutnya cukup username & password'); }
-      catch(err){ btn.disabled=false; btn.textContent='Simpan & Masuk'; if(isAdmin){ msg.textContent=''; toast('Masuk, tapi login baru gagal disimpan — coba lagi lewat menu Akun'); } else msg.textContent=fail(err); }
+      catch(err){ btn.disabled=false; btn.textContent='Simpan & Masuk'; if(err?.status===403){ msg.textContent=NO_WRITE; if(isAdmin){ toast('Token belum punya izin menyimpan'); setTimeout(()=>ghAccountForm(true),300); } } else if(isAdmin){ msg.textContent=''; toast('Masuk, tapi login baru gagal disimpan — coba lagi lewat menu Akun'); } else msg.textContent=fail(err); }
     }}, h('label',{},'Username',user), h('label',{},'Password',p1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password',p2w),
       h('label',{},'GitHub token',tok), msg, btn),
     h('a',{href:'https://github.com/settings/personal-access-tokens/new',target:'_blank',rel:'noopener',class:'glink'},'Belum punya token? Buat di GitHub →'),
@@ -2167,18 +2168,20 @@ let ghGateSetup=false;
 function ghAccountForm(first){
   const user=h('input',{type:'text',autocomplete:'username',required:true});
   const [n1w,n1]=pwField('Password baru','new-password'); const [n2w,n2]=pwField('Ulangi password baru','new-password');
+  const ntok=h('input',{type:'password',placeholder:'Kosongkan jika token lama masih berlaku',autocomplete:'off',spellcheck:'false'});
   const msg=h('p',{class:'gmsg'}); const btn=h('button',{class:'fbtn pri',type:'submit'},'Simpan');
   openModal(h('div',{class:'mpad'}, h('form',{class:'form',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
       if(user.value.trim().length<3) return msg.textContent='Username minimal 3 karakter.';
       if(!pwOk(n1.value)) return msg.textContent=PW_RULE;
       if(n1.value!==n2.value) return msg.textContent='Password baru dan ulangannya tidak sama.';
       btn.disabled=true; btn.textContent='Menyimpan…';
-      try{ await ghSaveAuth(user.value,n1.value); closeModal(); toast('Username & password diperbarui ✓'); }
-      catch(e){ btn.disabled=false; btn.textContent='Simpan'; msg.textContent='Gagal menyimpan ke GitHub'+(e?.status?' (kode '+e.status+')':'')+'. Coba lagi.'; }
+      try{ if(ntok.value.trim()) await ghLogin(ntok.value,{setup:true}); await ghSaveAuth(user.value,n1.value); closeModal(); toast('Login admin tersimpan ✓'); }
+      catch(e){ btn.disabled=false; btn.textContent='Simpan'; msg.textContent= e?.status===403 ? 'Token GitHub ini hanya bisa membaca, belum bisa menyimpan. Buat token baru dengan izin Contents: Read and write untuk repo Portofolio-Upgrade, lalu tempel di kolom token.' : e?.code==='bad_token' ? 'Token GitHub tidak valid atau sudah kedaluwarsa.' : 'Gagal menyimpan ke GitHub'+(e?.status?' (kode '+e.status+')':'')+'. Coba lagi.'; ntok.focus(); }
     }},
     h('h3',{class:'h',style:'font-size:22px'}, first?'Simpan Login Admin':'Akun Admin'),
     h('p',{class:'muted'}, first? 'Login username & password belum tersimpan di GitHub. Buat sekarang supaya di perangkat atau browser mana pun kamu cukup login dengan username & password, tanpa token lagi.' : 'Ganti username dan password login admin. Login lama langsung tidak berlaku.'),
-    h('label',{},'Username baru',user), h('label',{},'Password baru',n1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password baru',n2w), msg,
+    h('label',{},'Username baru',user), h('label',{},'Password baru',n1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password baru',n2w),
+    h('label',{},'GitHub token baru (opsional)',ntok), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},'Isi hanya jika muncul pesan izin/kode 403. Token harus punya izin Contents: Read and write.'), msg,
     h('div',{class:'fact'}, h('button',{class:'fbtn',type:'button',onclick:closeModal},'Batal'), btn))),'sm');
 }
 
