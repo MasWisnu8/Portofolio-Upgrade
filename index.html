@@ -180,6 +180,17 @@ section{position:relative;z-index:1;padding:110px 0}
 .addcard svg{width:28px;height:28px}
 .empty{color:var(--mut);text-align:center;padding:40px 0;grid-column:1/-1}
 
+/* pagination project */
+.pager{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+.pgnums{display:flex;gap:6px;align-items:center}
+.pgbtn{min-width:44px;height:44px;padding:0 14px;border-radius:999px;border:1px solid #2c2c2c;background:#111;color:#ddd;font-size:14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background .2s,border-color .2s,color .2s}
+.pgbtn:hover:not(:disabled){border-color:#666;color:#fff}
+.pgbtn.on{background:var(--acc);color:#000;border-color:var(--acc)}
+.pgbtn:disabled{opacity:.35;cursor:default}
+.pgbtn svg{width:16px;height:16px}
+.pgdots{color:var(--mut2);padding:0 4px}
+.pginfo{width:100%;text-align:center;font-size:12.5px;color:var(--mut2)}
+@media (max-width:620px){ .pgbtn.wide span{display:none} .pgbtn.wide{padding:0 12px} }
 /* contact */
 .cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:56px}
 .ccard{padding:26px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -1382,13 +1393,13 @@ function filteredProjects(){
   ps.sort((a,b)=> projSort==='old' ? (a.date||'').localeCompare(b.date||'') : projSort==='az' ? (a.title||'').localeCompare(b.title||'','id') : (b.date||'').localeCompare(a.date||''));
   return ps;
 }
-function resetProjSearch(){ projQ=''; projCat=''; const i=document.getElementById('pq'); if(i) i.value=''; fillProjects(); }
+function resetProjSearch(){ projQ=''; projCat=''; const i=document.getElementById('pq'); if(i) i.value=''; (projPage=1,fillProjects()); }
 function projTools(){
   const inp=h('input',{id:'pq',type:'search',placeholder:'Cari project… (judul, kategori, isi, tahun)',value:projQ,autocomplete:'off','aria-label':'Cari project',
-    oninput:e=>{ projQ=e.target.value; clr.hidden=!projQ; clearTimeout(pqT); pqT=setTimeout(fillProjects,120); },
+    oninput:e=>{ projQ=e.target.value; clr.hidden=!projQ; clearTimeout(pqT); pqT=setTimeout(()=>{projPage=1;fillProjects();},120); },
     onkeydown:e=>{ if(e.key==='Escape'){ e.stopPropagation(); resetProjSearch(); clr.hidden=true; } }});
-  const clr=h('button',{type:'button',class:'pclr',title:'Hapus pencarian',hidden:!projQ,html:IC.x,onclick:()=>{ projQ=''; inp.value=''; clr.hidden=true; fillProjects(); inp.focus(); }});
-  const sort=h('select',{class:'psort','aria-label':'Urutkan',onchange:e=>{ projSort=e.target.value; fillProjects(); }},
+  const clr=h('button',{type:'button',class:'pclr',title:'Hapus pencarian',hidden:!projQ,html:IC.x,onclick:()=>{ projQ=''; inp.value=''; clr.hidden=true; (projPage=1,fillProjects()); inp.focus(); }});
+  const sort=h('select',{class:'psort','aria-label':'Urutkan',onchange:e=>{ projSort=e.target.value; (projPage=1,fillProjects()); }},
     h('option',{value:'new'},'Terbaru'), h('option',{value:'old'},'Terlama'), h('option',{value:'az'},'Judul A–Z'));
   sort.value=projSort;
   return h('div',{class:'ptools',id:'ptools'},
@@ -1400,8 +1411,8 @@ function fillChips(){
   const box=document.getElementById('pchips'); if(!box) return;
   const cats=[...new Set(projects.map(p=>(p.category||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
   if(projCat && !cats.includes(projCat)) projCat='';
-  put(box, cats.length>1 && [h('button',{type:'button',class:'chip'+(projCat?'':' on'),onclick:()=>{ projCat=''; fillProjects(); }},'Semua'),
-    ...cats.map(c=>h('button',{type:'button',class:'chip'+(projCat===c?' on':''),onclick:()=>{ projCat= projCat===c?'':c; fillProjects(); }},c))]);
+  put(box, cats.length>1 && [h('button',{type:'button',class:'chip'+(projCat?'':' on'),onclick:()=>{ projCat=''; (projPage=1,fillProjects()); }},'Semua'),
+    ...cats.map(c=>h('button',{type:'button',class:'chip'+(projCat===c?' on':''),onclick:()=>{ projCat= projCat===c?'':c; (projPage=1,fillProjects()); }},c))]);
 }
 function secProj(){
   const grid=h('div',{class:'pgrid',id:'pgrid'});
@@ -1421,8 +1432,11 @@ function fillProjects(grid){
   const tools=grid.parentElement?.querySelector('#ptools') || document.getElementById('ptools');
   if(tools) tools.hidden = projects.length<2 && !filtering;
   setTimeout(()=>{ fillChips(); const c=document.getElementById('pcount'); if(c) c.textContent = filtering ? ps.length+' dari '+projects.length+' project' : projects.length+' project'; },0);
+  const per=projPer(), pages=Math.max(1,Math.ceil(ps.length/per));
+  if(projPage>pages) projPage=pages; if(projPage<1) projPage=1;
+  const startIdx=(projPage-1)*per, shown=ps.slice(startIdx,startIdx+per);
   put(grid,
-    ...ps.map((p,i)=>{
+    ...shown.map((p,j)=>{ const i=startIdx+j;
       const liked=!!myLikes?.items?.[p.id]; const vs=viewStat(p.id);
       const fresh=!seenCards.has(p.id) && !adminView(); seenCards.add(p.id);
       return h('div',{class:'pcard rv'+(fresh?'':' in')+(i===0&&ps.length>2&&!filtering?' big':''),role:'button',tabindex:0,onclick:()=>openProject(p.id),onkeydown:e=>{ if(e.key==='Enter') openProject(p.id); }},
@@ -1438,10 +1452,25 @@ function fillProjects(grid){
     }),
     !ps.length && filtering && h('div',{class:'empty'}, h('p',{},'Tidak ada project yang cocok'+(projQ.trim()?' dengan “'+projQ.trim()+'”':'')+'.'), h('button',{type:'button',class:'chip',style:'margin-top:12px',onclick:resetProjSearch},'Tampilkan semua project')),
     !ps.length && !filtering && !adminView() && h('p',{class:'empty'}, C.proj.empty),
-    adminView() && h('button',{class:'addcard',onclick:()=>projectForm()}, icon('plus'), 'Posting project baru')
+    adminView() && h('button',{class:'addcard',onclick:()=>projectForm()}, icon('plus'), 'Posting project baru'),
+    pages>1 && projPager(pages, ps.length, startIdx, shown.length)
   );
   if(booted) reveal();
 }
+/* ----- halaman project (1, 2, 3 …) ----- */
+let projPage=1;
+const projPer=()=> innerWidth<=620 ? 4 : 6;
+function goProjPage(n){ projPage=n; fillProjects(); const t=document.getElementById('project'); if(t) t.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); }
+function projPager(pages,total,start,count){
+  const nums=[]; for(let n=1;n<=pages;n++){ if(n===1||n===pages||Math.abs(n-projPage)<=1) nums.push(n); else if(nums[nums.length-1]!=='…') nums.push('…'); }
+  return h('nav',{class:'pager','aria-label':'Halaman project'},
+    h('button',{type:'button',class:'pgbtn wide',disabled:projPage===1,'aria-label':'Halaman sebelumnya',onclick:()=>goProjPage(projPage-1)}, icon('chevL'), h('span',{},'Sebelumnya')),
+    h('div',{class:'pgnums'}, nums.map(n=> n==='…' ? h('span',{class:'pgdots'},'…')
+      : h('button',{type:'button',class:'pgbtn'+(n===projPage?' on':''),'aria-label':'Halaman '+n,'aria-current':n===projPage?'page':null,onclick:()=>{ if(n!==projPage) goProjPage(n); }}, String(n)))),
+    h('button',{type:'button',class:'pgbtn wide',disabled:projPage===pages,'aria-label':'Halaman berikutnya',onclick:()=>goProjPage(projPage+1)}, h('span',{},'Berikutnya'), icon('chevR')),
+    h('div',{class:'pginfo'}, 'Menampilkan '+(start+1)+'–'+(start+count)+' dari '+total+' project'));
+}
+let pgW=innerWidth; addEventListener('resize',()=>{ const w=innerWidth; if((w<=620)!==(pgW<=620)){ pgW=w; fillProjects(); } else pgW=w; });
 function secContact(){
   const c=C.contact, li=safeUrl(c.linkedin), ig=igHandle(c.instagram), wa=waLink(c.phone);
   const card=(ic,lbl,valPath,acts,o={})=>h('div',{class:'card ccard rv'}, h('div',{class:'icirc',html:IC[ic]}),
