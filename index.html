@@ -1805,7 +1805,7 @@ function renderAdmin(){
       !preview && h('button',{class:'abtn',onclick:()=>projectForm()}, icon('plus'),'Project'),
       h('button',{class:'abtn',onclick:STATIC? openGcStats : openStats}, icon('chart'),'Statistik'),
       !preview && h('label',{class:'abtn',title:'Warna aksen'}, color),
-      !STATIC && h('button',{class:'abtn',onclick:accountForm}, icon('user'),'Akun'),
+      h('button',{class:'abtn',onclick:STATIC? ghAccountForm : accountForm}, icon('user'),'Akun'),
       STATIC && h('a',{class:'abtn',href:'./',target:'_blank',rel:'noopener'}, icon('link'),'Lihat website'),
       h('button',{class:'abtn',onclick:logout}, icon('x'),'Keluar'),
       h('span',{class:'status',id:'status',title:'Versi halaman '+PAGE_VER}, prevStatus),
@@ -2087,6 +2087,95 @@ function openGcStats(){
   }
 }
 
+/* ---------- LOGIN ADMIN: USERNAME + PASSWORD ----------
+   GitHub token disimpan TERENKRIPSI di admin-auth.json (AES-GCM, kunci dari PBKDF2 600.000 putaran
+   atas username+password). Tanpa password yang benar, isi file itu tidak bisa dipakai. */
+const AUTH_FILE='admin-auth.json', AUTH_ITER=600000;
+let ghAuth=null, ghAuthLoaded=false;
+async function ghLoadAuth(){
+  try{ const r=await fetch(AUTH_FILE+'?t='+Date.now(),{cache:'no-store'}); ghAuth= r.ok? await r.json() : null; }catch{ ghAuth=null; }
+  if(!(ghAuth && ghAuth.ct && ghAuth.salt && ghAuth.iv)) ghAuth=null; ghAuthLoaded=true; return ghAuth;
+}
+const b64u8=b=>Uint8Array.from(atob(b),c=>c.charCodeAt(0));
+async function authKey(user,pw,salt,iter){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(user.trim().toLowerCase()+'\n'+pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function sealToken(user,pw,token){
+  const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await authKey(user,pw,salt,AUTH_ITER);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(token)));
+  return {v:1, kdf:'PBKDF2-SHA256', iter:AUTH_ITER, salt:u8b64(salt), iv:u8b64(iv), ct:u8b64(ct), updatedAt:new Date().toISOString()};
+}
+async function openToken(user,pw,a){
+  const key=await authKey(user,pw,b64u8(a.salt),a.iter||AUTH_ITER);
+  try{ return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64u8(a.iv)},key,b64u8(a.ct))); }catch{ return null; }
+}
+async function ghSaveAuth(user,pw){
+  const blob=await sealToken(user,pw,GH.token);
+  await ghQueue(async()=>{ let sha; try{ sha=(await ghApi('/contents/'+AUTH_FILE+'?ref='+encodeURIComponent(GH.branch))).sha; }catch{}
+    await ghApi('/contents/'+AUTH_FILE,{method:'PUT',body:JSON.stringify({message:'Perbarui login admin',content:txtB64(JSON.stringify(blob,null,2)+'\n'),sha,branch:GH.branch})}); });
+  ghAuth=blob;
+}
+const pwOk=pw=>pw.length>=10;
+const PW_RULE='Password minimal 10 karakter. Makin panjang makin aman (mis. gabungan 3–4 kata).';
+function ghGateBody(head,msg,guestLink){
+  if(!ghAuthLoaded){ ghLoadAuth().then(()=>{ if(route()==='admin' && !isAdmin) renderGate(); }); return [...head('Login Admin','Memuat…'), guestLink]; }
+  const remRow=()=>{ const rem=h('input',{type:'checkbox',style:'width:auto'}); return [rem, h('label',{style:'display:flex;gap:10px;align-items:center;font-size:13px;letter-spacing:0'}, rem, 'Ingat di perangkat ini (jangan dicentang di komputer umum)')]; };
+  const fail=err=> err?.code==='bad_token' ? 'Token GitHub tidak valid atau sudah kedaluwarsa.' : err?.code==='invalid_argument' ? 'Token ini tidak punya izin menulis ke repo '+GH.owner+'/'+GH.repo+'.' : 'Tidak bisa terhubung ke GitHub. Coba lagi.';
+  if(ghAuth && !ghGateSetup){
+    const user=h('input',{type:'text',placeholder:'Username',autocomplete:'username',required:true});
+    const [pww,pw]=pwField('Password','current-password'); const [rem,remL]=remRow();
+    const btn=h('button',{class:'fbtn pri gbtn',type:'submit'},'Login');
+    return [...head('Login Admin','Masukkan username dan password untuk mengelola portofolio.'),
+      h('form',{class:'form',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
+        if(Date.now()<lockUntil){ msg.textContent='Terlalu banyak percobaan. Tunggu '+Math.ceil((lockUntil-Date.now())/1000)+' detik.'; return; }
+        btn.disabled=true; btn.textContent='Memeriksa…';
+        const tok=await openToken(user.value,pw.value,ghAuth);
+        if(!tok){ btn.disabled=false; btn.textContent='Login'; failCount++; if(failCount>=5){ failCount=0; lockUntil=Date.now()+60000; } msg.textContent='Username atau password salah.'; pw.value=''; pw.focus(); return; }
+        try{ await ghLogin(tok,{remember:rem.checked}); failCount=0; window.scrollTo(0,0); toast('Berhasil masuk ✓'); }
+        catch(err){ btn.disabled=false; btn.textContent='Login'; msg.textContent=fail(err)+(err?.code==='bad_token'?' Klik "Atur ulang login" dan masukkan token baru.':''); }
+      }}, h('label',{},'Username',user), h('label',{},'Password',pww), remL, msg, btn),
+      h('a',{href:'#admin',class:'glink',onclick:e=>{ e.preventDefault(); ghGateSetup=true; renderGate(); }},'Lupa password / token kedaluwarsa? Atur ulang login'),
+      guestLink];
+  }
+  const user=h('input',{type:'text',placeholder:'Buat username',autocomplete:'username',required:true,minlength:3});
+  const [p1w,p1]=pwField('Buat password','new-password'); const [p2w,p2]=pwField('Ulangi password','new-password');
+  const tok=h('input',{type:'password',placeholder:'Tempel GitHub token (sekali ini saja)',autocomplete:'off',required:true,spellcheck:'false'});
+  const btn=h('button',{class:'fbtn pri gbtn',type:'submit'},'Simpan & Masuk');
+  return [...head(ghAuth?'Atur Ulang Login':'Buat Login Admin', (ghAuth?'Buat username & password baru. ':'Pertama kali di sini. Buat username & password untuk login admin. ')+'GitHub token cukup ditempel sekali ini — setelah itu disimpan terenkripsi dan login cukup pakai username & password.'),
+    h('form',{class:'form',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
+      if(user.value.trim().length<3) return msg.textContent='Username minimal 3 karakter.';
+      if(!pwOk(p1.value)) return msg.textContent=PW_RULE;
+      if(p1.value!==p2.value) return msg.textContent='Password dan ulangannya tidak sama.';
+      btn.disabled=true; btn.textContent='Menyimpan…';
+      try{ await ghLogin(tok.value); await ghSaveAuth(user.value,p1.value); ghGateSetup=false; window.scrollTo(0,0); toast('Login admin tersimpan ✓ Berikutnya cukup username & password'); }
+      catch(err){ btn.disabled=false; btn.textContent='Simpan & Masuk'; if(isAdmin){ msg.textContent=''; toast('Masuk, tapi login baru gagal disimpan — coba lagi lewat menu Akun'); } else msg.textContent=fail(err); }
+    }}, h('label',{},'Username',user), h('label',{},'Password',p1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password',p2w),
+      h('label',{},'GitHub token',tok), msg, btn),
+    h('a',{href:'https://github.com/settings/personal-access-tokens/new',target:'_blank',rel:'noopener',class:'glink'},'Belum punya token? Buat di GitHub →'),
+    ghAuth && h('a',{href:'#admin',class:'glink',onclick:e=>{ e.preventDefault(); ghGateSetup=false; renderGate(); }},'← Kembali ke login'),
+    guestLink];
+}
+let ghGateSetup=false;
+function ghAccountForm(){
+  const user=h('input',{type:'text',autocomplete:'username',required:true});
+  const [n1w,n1]=pwField('Password baru','new-password'); const [n2w,n2]=pwField('Ulangi password baru','new-password');
+  const msg=h('p',{class:'gmsg'}); const btn=h('button',{class:'fbtn pri',type:'submit'},'Simpan');
+  openModal(h('div',{class:'mpad'}, h('form',{class:'form',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
+      if(user.value.trim().length<3) return msg.textContent='Username minimal 3 karakter.';
+      if(!pwOk(n1.value)) return msg.textContent=PW_RULE;
+      if(n1.value!==n2.value) return msg.textContent='Password baru dan ulangannya tidak sama.';
+      btn.disabled=true; btn.textContent='Menyimpan…';
+      try{ await ghSaveAuth(user.value,n1.value); closeModal(); toast('Username & password diperbarui ✓'); }
+      catch{ btn.disabled=false; btn.textContent='Simpan'; msg.textContent='Gagal menyimpan. Coba lagi.'; }
+    }},
+    h('h3',{class:'h',style:'font-size:22px'},'Akun Admin'),
+    h('p',{class:'muted'},'Ganti username dan password login admin. Login lama langsung tidak berlaku.'),
+    h('label',{},'Username baru',user), h('label',{},'Password baru',n1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password baru',n2w), msg,
+    h('div',{class:'fact'}, h('button',{class:'fbtn',type:'button',onclick:closeModal},'Batal'), btn))),'sm');
+}
+
 /* ---------- ROLE / AUTH ---------- */
 function subPriv(){
   if(privSub||!db) return; privSub=true;
@@ -2135,21 +2224,7 @@ function renderGate(){
   const head=(t,sub)=>[h('div',{class:'glogo',html:IC.user}), h('h1',{class:'h gtitle'},t), h('p',{class:'gsub'},sub)];
   let body;
   if(STATIC){
-    const tok=h('input',{type:'password',placeholder:'Tempel GitHub token di sini',autocomplete:'off',required:true,spellcheck:'false'});
-    const rem=h('input',{type:'checkbox',style:'width:auto'});
-    const btn=h('button',{class:'fbtn pri gbtn',type:'submit'},'Login');
-    body=[...head('Login Admin','Masuk dengan GitHub token milik pemilik website. Perubahan yang kamu simpan langsung tersimpan ke GitHub dan tampil untuk tamu sekitar 1–2 menit kemudian.'),
-      h('form',{class:'form',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
-        if(Date.now()<lockUntil){ msg.textContent='Terlalu banyak percobaan. Tunggu '+Math.ceil((lockUntil-Date.now())/1000)+' detik.'; return; }
-        btn.disabled=true; btn.textContent='Memeriksa…';
-        try{ await ghLogin(tok.value,{remember:rem.checked}); failCount=0; window.scrollTo(0,0); toast('Berhasil masuk ✓'); }
-        catch(err){ btn.disabled=false; btn.textContent='Login'; failCount++; if(failCount>=5){ failCount=0; lockUntil=Date.now()+30000; }
-          msg.textContent= err?.code==='bad_token' ? 'Token tidak valid atau sudah kedaluwarsa.' : err?.code==='invalid_argument' ? 'Token ini tidak punya izin menulis ke repo '+GH.owner+'/'+GH.repo+'.' : 'Tidak bisa terhubung ke GitHub. Coba lagi.'; tok.value=''; tok.focus(); }
-      }}, h('label',{},'GitHub token',tok),
-        h('label',{style:'display:flex;gap:10px;align-items:center;font-size:13px;letter-spacing:0'}, rem, 'Ingat di perangkat ini (jangan dicentang di komputer umum)'),
-        msg, btn),
-      h('a',{href:'https://github.com/settings/personal-access-tokens/new',target:'_blank',rel:'noopener',class:'glink'},'Belum punya token? Buat di GitHub →'),
-      guestLink];
+    body=ghGateBody(head,msg,guestLink);
   } else if(!db){
     body=[...head('Halaman Admin','Masuk ke akun Claude kamu terlebih dahulu, lalu buka link admin ini lagi.'), guestLink];
   } else if(!window.crypto?.subtle){
