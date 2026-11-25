@@ -185,7 +185,8 @@ window.SITE_CONTENT = {
     },
     "settings": {
       "accent": "#ffffff",
-      "hidden": {}
+      "hidden": {},
+      "goatcounter": "wisnupandu"
     },
     "skill": {
       "eyebrow": "Keahlian",
