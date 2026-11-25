@@ -1105,7 +1105,7 @@ async function uploadDocs(files,z){
       const r=await assets.upload(f,{type:'application/pdf'});
       const title=f.name.replace(/\.pdf$/i,'').replace(/[_]+/g,' ').trim()||'Dokumen';
       await persistQuick(c=>{ c.exp.docs=c.exp.docs||[]; c.exp.docs.push({title, asset:r.id, size:r.sizeBytes||f.size, show:true, at:Date.now()}); }, 'PDF terupload ✓', false, ['exp.docs']);
-    }catch(err){ toast(err?.code==='too_large'?'File terlalu besar (maks. 20 MB)':err?.code==='quota_or_state'?'Penyimpanan file penuh':'Upload gagal — coba lagi'); }
+    }catch(err){ toast(err?.code==='too_large'?'File terlalu besar (maks. 20 MB)':err?.code==='quota_or_state'?'Penyimpanan file penuh':failWhy(err,'Upload gagal')); }
   }
   z?.classList.remove('busy');
 }
@@ -1213,7 +1213,7 @@ async function pickAndUploadAny(){
     const r=await assets.upload(blob,{type});
     setStatus('File terupload ✓');
     return {id:r.id, type, name:f.name, size:r.sizeBytes||blob.size};
-  }catch(err){ setStatus('Upload gagal'); toast(err?.code==='too_large'?'File terlalu besar (maks. 20 MB)':err?.code==='unsupported_type'?'Format file tidak didukung':'Upload gagal — coba lagi'); return null; }
+  }catch(err){ setStatus('Upload gagal'); toast(err?.code==='too_large'?'File terlalu besar (maks. 20 MB)':err?.code==='unsupported_type'?'Format file tidak didukung':failWhy(err,'Upload gagal')); return null; }
 }
 async function downloadAsset(id,name,ext,btn){
   if(btn) btn.disabled=true;
@@ -1605,7 +1605,7 @@ async function persistQuick(fn, msg, noRender, paths){
   catch(err){ toast(errMsg(err)); return false; }
 }
 async function deleteProject(p){
-  confirmBox('Hapus project ini?','"'+(p.title||'')+'" akan dihapus permanen.',async()=>{ try{ await db.doc('projects/'+p.id).delete(); toast('Project dihapus ✓'); }catch{ toast('Gagal menghapus'); } });
+  confirmBox('Hapus project ini?','"'+(p.title||'')+'" akan dihapus permanen.',async()=>{ try{ await db.doc('projects/'+p.id).delete(); toast('Project dihapus ✓'); }catch(err){ toast(failWhy(err,'Gagal menghapus')); } });
 }
 window.addEventListener('beforeunload',e=>{ try{ flushLog(); }catch{} if(dirty){ e.preventDefault(); e.returnValue=''; } });
 
@@ -1625,7 +1625,7 @@ async function pickAndUpload(){
   const f=await pickFile(); if(!f) return null;
   setStatus('Mengupload foto…');
   try{ const b=await downscale(f); const r=await assets.upload(b,{type:b.type||'image/jpeg'}); setStatus('Foto terupload ✓'); return r.id; }
-  catch(err){ setStatus('Upload gagal'); toast(err?.code==='too_large'?'Foto terlalu besar (maks 20 MB)':err?.code==='unsupported_type'?'Format foto tidak didukung':'Upload gagal — coba lagi'); return null; }
+  catch(err){ setStatus('Upload gagal'); toast(err?.code==='too_large'?'Foto terlalu besar (maks 20 MB)':err?.code==='unsupported_type'?'Format foto tidak didukung':failWhy(err,'Upload gagal')); return null; }
 }
 
 /* ---------- MODALS ---------- */
@@ -1723,7 +1723,7 @@ function projectForm(p){
       prog.textContent='Mengupload foto '+(k+1)+' dari '+files.length+'…';
       try{ const b=await downscale(files[k]); const r=await assets.upload(b,{type:b.type||'image/jpeg'});
         p.photos.push({id:r.id,caption:''}); if(!p.cover) p.cover=r.id; drawPM(); }
-      catch(err){ toast((files[k].name||'Foto')+': '+(err?.code==='too_large'?'terlalu besar (maks. 20 MB)':err?.code==='unsupported_type'?'format tidak didukung':'gagal diupload')); }
+      catch(err){ toast((files[k].name||'Foto')+': '+(err?.code==='too_large'?'terlalu besar (maks. 20 MB)':err?.code==='unsupported_type'?'format tidak didukung':failWhy(err,'gagal diupload'))); }
     }
     prog.textContent=''; uploading--; if(!uploading) save.disabled=false;
   }
@@ -1758,7 +1758,7 @@ function projectForm(p){
       const id=p.id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
       const body={title:p.title.trim(),category:(p.category||'').trim(),date:p.date||'',summary:p.summary||'',body:p.body||'',link:(p.link||'').trim(),cover:p.cover||p.photos[0]?.id||null,photos:p.photos.map(x=>({id:x.id,caption:(x.caption||'').trim()})),updatedAt:Date.now(),createdAt:p.createdAt||Date.now()};
       try{ await db.doc('projects/'+id).set(body); closeModal(); toast(isNew?'Project diposting ✓':'Project diperbarui ✓'); }
-      catch(err){ save.disabled=false; toast(err?.code==='quota_exceeded'?'Penyimpanan penuh':'Gagal menyimpan project'); }
+      catch(err){ save.disabled=false; toast(err?.code==='quota_exceeded'?'Penyimpanan penuh':failWhy(err,'Gagal menyimpan project')); }
     }},
     h('h3',{class:'h',style:'font-size:22px'}, isNew?'Posting Project Baru':'Edit Project'),
     h('div',{class:'flabel'}, h('span',{},'Foto project'), pm),
@@ -1806,8 +1806,9 @@ function renderAdmin(){
       !preview && h('button',{class:'abtn',onclick:()=>projectForm()}, icon('plus'),'Project'),
       h('button',{class:'abtn',onclick:STATIC? openGcStats : openStats}, icon('chart'),'Statistik'),
       !preview && h('label',{class:'abtn',title:'Warna aksen'}, color),
-      h('button',{class:'abtn',onclick:STATIC? ghAccountForm : accountForm}, icon('user'),'Akun'),
+      h('button',{class:'abtn',onclick:()=>STATIC? ghAccountForm() : accountForm()}, icon('user'),'Akun'),
       STATIC && h('a',{class:'abtn',href:'./',target:'_blank',rel:'noopener'}, icon('link'),'Lihat website'),
+      STATIC && GH.readOnly && h('button',{class:'abtn',style:'background:#7a1f1f;color:#fff',onclick:()=>ghAccountForm(true,true)}, '⚠ Perbarui token GitHub'),
       h('button',{class:'abtn',onclick:logout}, icon('x'),'Keluar'),
       h('span',{class:'status',id:'status',title:'Versi halaman '+PAGE_VER}, prevStatus),
       h('span',{class:'status',style:'min-width:0;opacity:.6'}, PAGE_VER)
@@ -1963,6 +1964,16 @@ async function ghApi(path,opt={}){
     e.code= r.status===401?'bad_token' : r.status===403||r.status===404?'invalid_argument' : r.status===409||r.status===422?'conflict' : 'unavailable'; throw e; }
   return r.status===204? null : r.json();
 }
+function failWhy(err,base){
+  if(err?.status===403||err?.status===404&&STATIC&&isAdmin){ if(STATIC&&!GH.readOnly){ GH.readOnly=true; renderAdmin(); } return 'Token GitHub belum punya izin menyimpan (Contents: Read and write)'; }
+  if(err?.status===401) return 'Token GitHub kedaluwarsa — login ulang';
+  if(err?.status===409||err?.status===422) return base+' — ada perubahan bersamaan, coba lagi';
+  if(err?.status) return base+' (kode '+err.status+')';
+  if(err instanceof TypeError) return base+' — periksa koneksi internet';
+  return base+' — coba lagi';
+}
+let noWriteShown=0;
+function ghNoWrite(){ if(Date.now()-noWriteShown<8000) return; noWriteShown=Date.now(); ghAccountForm(true,true); }
 const ghQueue=fn=>{ const run=GH.q.then(fn); GH.q=run.catch(()=>{}); return run; };
 const u8b64=u8=>{ let s=''; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s); };
 const txtB64=t=>u8b64(new TextEncoder().encode(t));
@@ -2041,14 +2052,17 @@ async function ghLogin(token,{silent=false,remember=false,setup=false}={}){
     const r=await ghApi('');
     if(!r.permissions?.push){ const e=new Error('no push'); e.code='invalid_argument'; throw e; }
     GH.branch=r.default_branch;
+    GH.readOnly=false;
+    try{ await ghApi('/git/blobs',{method:'POST',body:JSON.stringify({content:'cek-izin',encoding:'utf-8'})}); }catch(e){ if(e.status===403||e.status===404) GH.readOnly=true; }
     await ghLoadContent();
   }catch(e){ GH.token=null; if(silent){ ghForget(); return false; } throw e; }
-  try{ (remember? localStorage : sessionStorage).setItem('pf_gh',GH.token); }catch{}
+  ghForget(); try{ (remember? localStorage : sessionStorage).setItem('pf_gh',GH.token); }catch{}
   db=ghDb; assets=ghAssets; canEditCap=true; authed=true;
   updateRole();
   if(!GH.wired){ GH.wired=true; wireDb(null); }
   ghNotify(); render();
-  if(!setup){ if(!ghAuthLoaded) await ghLoadAuth(); if(!ghAuth) setTimeout(()=>ghAccountForm(true),500); }
+  if(GH.readOnly){ if(setup){ const e=new Error('read only'); e.status=403; throw e; } setTimeout(ghNoWrite,500); }
+  else if(!setup){ if(!ghAuthLoaded) await ghLoadAuth(); if(!ghAuth) setTimeout(()=>ghAccountForm(true),500); }
   return true;
 }
 
@@ -2165,7 +2179,7 @@ function ghGateBody(head,msg,guestLink){
     guestLink];
 }
 let ghGateSetup=false;
-function ghAccountForm(first){
+function ghAccountForm(first,noWrite){
   const user=h('input',{type:'text',autocomplete:'username',required:true});
   const [n1w,n1]=pwField('Password baru','new-password'); const [n2w,n2]=pwField('Ulangi password baru','new-password');
   const ntok=h('input',{type:'password',placeholder:'Kosongkan jika token lama masih berlaku',autocomplete:'off',spellcheck:'false'});
@@ -2175,11 +2189,11 @@ function ghAccountForm(first){
       if(!pwOk(n1.value)) return msg.textContent=PW_RULE;
       if(n1.value!==n2.value) return msg.textContent='Password baru dan ulangannya tidak sama.';
       btn.disabled=true; btn.textContent='Menyimpan…';
-      try{ if(ntok.value.trim()) await ghLogin(ntok.value,{setup:true}); await ghSaveAuth(user.value,n1.value); closeModal(); toast('Login admin tersimpan ✓'); }
+      try{ if(ntok.value.trim()) await ghLogin(ntok.value,{setup:true}); else if(GH.readOnly){ const e=new Error('ro'); e.status=403; throw e; } await ghSaveAuth(user.value,n1.value); closeModal(); renderAdmin(); toast('Login admin tersimpan ✓'); }
       catch(e){ btn.disabled=false; btn.textContent='Simpan'; msg.textContent= e?.status===403 ? 'Token GitHub ini hanya bisa membaca, belum bisa menyimpan. Buat token baru dengan izin Contents: Read and write untuk repo Portofolio-Upgrade, lalu tempel di kolom token.' : e?.code==='bad_token' ? 'Token GitHub tidak valid atau sudah kedaluwarsa.' : 'Gagal menyimpan ke GitHub'+(e?.status?' (kode '+e.status+')':'')+'. Coba lagi.'; ntok.focus(); }
     }},
-    h('h3',{class:'h',style:'font-size:22px'}, first?'Simpan Login Admin':'Akun Admin'),
-    h('p',{class:'muted'}, first? 'Login username & password belum tersimpan di GitHub. Buat sekarang supaya di perangkat atau browser mana pun kamu cukup login dengan username & password, tanpa token lagi.' : 'Ganti username dan password login admin. Login lama langsung tidak berlaku.'),
+    h('h3',{class:'h',style:'font-size:22px'}, noWrite?'Perbarui Token GitHub':first?'Simpan Login Admin':'Akun Admin'),
+    h('p',{class:'muted'}, noWrite? 'Token GitHub yang sedang dipakai hanya bisa MEMBACA, jadi foto & project tidak bisa disimpan. Buat token baru dengan izin Contents: Read and write, lalu tempel di kolom token di bawah bersama username & password.' : first? 'Login username & password belum tersimpan di GitHub. Buat sekarang supaya di perangkat atau browser mana pun kamu cukup login dengan username & password, tanpa token lagi.' : 'Ganti username dan password login admin. Login lama langsung tidak berlaku.'),
     h('label',{},'Username baru',user), h('label',{},'Password baru',n1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password baru',n2w),
     h('label',{},'GitHub token baru (opsional)',ntok), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},'Isi hanya jika muncul pesan izin/kode 403. Token harus punya izin Contents: Read and write.'), msg,
     h('div',{class:'fact'}, h('button',{class:'fbtn',type:'button',onclick:closeModal},'Batal'), btn))),'sm');
