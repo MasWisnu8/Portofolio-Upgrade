@@ -2034,7 +2034,7 @@ const ghAssets={
     delete window.SITE_ASSETS[id];
   }
 };
-async function ghLogin(token,{silent=false,remember=false}={}){
+async function ghLogin(token,{silent=false,remember=false,setup=false}={}){
   GH.token=token.trim();
   try{
     const r=await ghApi('');
@@ -2046,7 +2046,9 @@ async function ghLogin(token,{silent=false,remember=false}={}){
   db=ghDb; assets=ghAssets; canEditCap=true; authed=true;
   updateRole();
   if(!GH.wired){ GH.wired=true; wireDb(null); }
-  ghNotify(); render(); return true;
+  ghNotify(); render();
+  if(!setup){ if(!ghAuthLoaded) await ghLoadAuth(); if(!ghAuth) setTimeout(()=>ghAccountForm(true),500); }
+  return true;
 }
 
 /* ---------- PENGHITUNG PENGUNJUNG (GoatCounter, gratis & tanpa cookie) ---------- */
@@ -2093,7 +2095,9 @@ function openGcStats(){
 const AUTH_FILE='admin-auth.json', AUTH_ITER=600000;
 let ghAuth=null, ghAuthLoaded=false;
 async function ghLoadAuth(){
-  try{ const r=await fetch(AUTH_FILE+'?t='+Date.now(),{cache:'no-store'}); ghAuth= r.ok? await r.json() : null; }catch{ ghAuth=null; }
+  const urls=[AUTH_FILE+'?t='+Date.now(), 'https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/HEAD/'+AUTH_FILE+'?t='+Date.now()];
+  ghAuth=null;
+  for(const u of urls){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ const j=await r.json(); if(j&&j.ct){ ghAuth=j; break; } } }catch{} }
   if(!(ghAuth && ghAuth.ct && ghAuth.salt && ghAuth.iv)) ghAuth=null; ghAuthLoaded=true; return ghAuth;
 }
 const b64u8=b=>Uint8Array.from(atob(b),c=>c.charCodeAt(0));
@@ -2115,7 +2119,9 @@ async function ghSaveAuth(user,pw){
   const blob=await sealToken(user,pw,GH.token);
   await ghQueue(async()=>{ let sha; try{ sha=(await ghApi('/contents/'+AUTH_FILE+'?ref='+encodeURIComponent(GH.branch))).sha; }catch{}
     await ghApi('/contents/'+AUTH_FILE,{method:'PUT',body:JSON.stringify({message:'Perbarui login admin',content:txtB64(JSON.stringify(blob,null,2)+'\n'),sha,branch:GH.branch})}); });
-  ghAuth=blob;
+  ghAuth=blob; ghAuthLoaded=true;
+  const chk=await ghApi('/contents/'+AUTH_FILE+'?ref='+encodeURIComponent(GH.branch));
+  if(!chk?.sha) throw new Error('verify');
 }
 const pwOk=pw=>pw.length>=10;
 const PW_RULE='Password minimal 10 karakter. Makin panjang makin aman (mis. gabungan 3–4 kata).';
@@ -2149,7 +2155,7 @@ function ghGateBody(head,msg,guestLink){
       if(!pwOk(p1.value)) return msg.textContent=PW_RULE;
       if(p1.value!==p2.value) return msg.textContent='Password dan ulangannya tidak sama.';
       btn.disabled=true; btn.textContent='Menyimpan…';
-      try{ await ghLogin(tok.value); await ghSaveAuth(user.value,p1.value); ghGateSetup=false; window.scrollTo(0,0); toast('Login admin tersimpan ✓ Berikutnya cukup username & password'); }
+      try{ await ghLogin(tok.value,{setup:true}); await ghSaveAuth(user.value,p1.value); ghGateSetup=false; window.scrollTo(0,0); toast('Login admin tersimpan ✓ Berikutnya cukup username & password'); }
       catch(err){ btn.disabled=false; btn.textContent='Simpan & Masuk'; if(isAdmin){ msg.textContent=''; toast('Masuk, tapi login baru gagal disimpan — coba lagi lewat menu Akun'); } else msg.textContent=fail(err); }
     }}, h('label',{},'Username',user), h('label',{},'Password',p1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password',p2w),
       h('label',{},'GitHub token',tok), msg, btn),
@@ -2158,7 +2164,7 @@ function ghGateBody(head,msg,guestLink){
     guestLink];
 }
 let ghGateSetup=false;
-function ghAccountForm(){
+function ghAccountForm(first){
   const user=h('input',{type:'text',autocomplete:'username',required:true});
   const [n1w,n1]=pwField('Password baru','new-password'); const [n2w,n2]=pwField('Ulangi password baru','new-password');
   const msg=h('p',{class:'gmsg'}); const btn=h('button',{class:'fbtn pri',type:'submit'},'Simpan');
@@ -2168,10 +2174,10 @@ function ghAccountForm(){
       if(n1.value!==n2.value) return msg.textContent='Password baru dan ulangannya tidak sama.';
       btn.disabled=true; btn.textContent='Menyimpan…';
       try{ await ghSaveAuth(user.value,n1.value); closeModal(); toast('Username & password diperbarui ✓'); }
-      catch{ btn.disabled=false; btn.textContent='Simpan'; msg.textContent='Gagal menyimpan. Coba lagi.'; }
+      catch(e){ btn.disabled=false; btn.textContent='Simpan'; msg.textContent='Gagal menyimpan ke GitHub'+(e?.status?' (kode '+e.status+')':'')+'. Coba lagi.'; }
     }},
-    h('h3',{class:'h',style:'font-size:22px'},'Akun Admin'),
-    h('p',{class:'muted'},'Ganti username dan password login admin. Login lama langsung tidak berlaku.'),
+    h('h3',{class:'h',style:'font-size:22px'}, first?'Simpan Login Admin':'Akun Admin'),
+    h('p',{class:'muted'}, first? 'Login username & password belum tersimpan di GitHub. Buat sekarang supaya di perangkat atau browser mana pun kamu cukup login dengan username & password, tanpa token lagi.' : 'Ganti username dan password login admin. Login lama langsung tidak berlaku.'),
     h('label',{},'Username baru',user), h('label',{},'Password baru',n1w), h('p',{class:'muted',style:'font-size:12px;margin-top:-8px'},PW_RULE), h('label',{},'Ulangi password baru',n2w), msg,
     h('div',{class:'fact'}, h('button',{class:'fbtn',type:'button',onclick:closeModal},'Batal'), btn))),'sm');
 }
