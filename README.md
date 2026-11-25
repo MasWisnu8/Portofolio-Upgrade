@@ -16,4 +16,17 @@ Website portofolio statis, siap tampil di **GitHub Pages**.
 ## Mengaktifkan GitHub Pages
 Settings → Pages → Source: *Deploy from a branch* → pilih branch dan folder `/ (root)` → Save.
 
-Catatan: mode admin (`#admin`), statistik pengunjung, dan tombol like hanya ada di versi Claude Artifact. Di GitHub Pages, isi diubah lewat `content.js`.
+## Halaman admin dan guest
+- **Guest (tamu):** `https://maswisnu8.github.io/Portofolio-Upgrade/`
+- **Admin:** `https://maswisnu8.github.io/Portofolio-Upgrade/admin.html` (atau tambahkan `#admin` di akhir alamat).
+
+Login admin memakai **GitHub fine-grained token** milik pemilik repo:
+1. Buka https://github.com/settings/personal-access-tokens/new
+2. Isi nama (mis. "Admin Portofolio") dan masa berlaku (mis. 1 tahun).
+3. *Repository access* → **Only select repositories** → pilih `Portofolio-Upgrade`.
+4. *Permissions* → *Repository permissions* → **Contents: Read and write**.
+5. Klik **Generate token**, salin, lalu tempel di halaman login admin.
+
+Setiap klik **Simpan** di admin membuat 1 commit ke `content.js` (foto baru masuk ke `assets/`). Tamu melihat perubahan sekitar 1–2 menit kemudian. Token hanya disimpan di browser, tidak pernah ditulis ke repo.
+
+Catatan: statistik pengunjung dan tombol like hanya ada di versi Claude Artifact. Karena repo publik, file yang disembunyikan dari tamu tetap bisa ditemukan di repo.

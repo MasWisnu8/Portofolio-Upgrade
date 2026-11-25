@@ -679,7 +679,7 @@ let isAdmin=false, editMode=false, canTrack=true, booted=false;
 let canEditCap=false, authed=false, authDoc=null, viewsSub=false, failCount=0, lockUntil=0;
 /* STATIC = berjalan di GitHub Pages (tanpa runtime Claude): isi diambil dari content.js */
 let STATIC=false;
-const route=()=> (!STATIC && location.hash==='#admin') ? 'admin' : 'guest';
+const route=()=> location.hash==='#admin' ? 'admin' : 'guest';
 let editSec=null, backup=null, preview=false;
 const SEC_OF={hero:'hero',brand:'about',exp:'exp',edu:'edu',cert:'cert',skill:'skill',proj:'proj',contact:'contact',nav:'site',footer:'site'};
 const SEC_NAME={hero:'Profil',about:'Personal Branding',exp:'Pengalaman',edu:'Pendidikan',cert:'Sertifikasi & Pelatihan',skill:'Keahlian',proj:'Project',contact:'Kontak',site:'Menu & Footer'};
@@ -724,7 +724,7 @@ function ed(tag, path, cls, o={}){
   el.textContent = (!isEd(secOf(path)) && o.display) ? o.display(v) : (v??'');
   return el;
 }
-const blobUrl=id=> STATIC ? ((window.SITE_ASSETS||{})[id] || ('assets/'+id)) : '/_blob/'+id;
+const blobUrl=id=> STATIC ? (LOCAL_URL[id] || (window.SITE_ASSETS||{})[id] || ('assets/'+id)) : '/_blob/'+id;
 function imgOrPh(id, label, alt){
   if(id){ const im=h('img',{src:blobUrl(id),alt:alt||'',loading:alt?'eager':'lazy',decoding:'async'}); im.onerror=()=>im.replaceWith(ph(label)); return im; }
   return ph(label);
@@ -1803,9 +1803,10 @@ function renderAdmin(){
       h('div',{class:'tag'}, h('i'), h('span',{},'Admin')),
       h('button',{class:'abtn'+(preview?' on':''),onclick:togglePreview}, icon(preview?'edit':'eye'), preview?'Kembali ke Admin':'Pratinjau Tamu'),
       !preview && h('button',{class:'abtn',onclick:()=>projectForm()}, icon('plus'),'Project'),
-      h('button',{class:'abtn',onclick:openStats}, icon('chart'),'Statistik'),
+      !STATIC && h('button',{class:'abtn',onclick:openStats}, icon('chart'),'Statistik'),
       !preview && h('label',{class:'abtn',title:'Warna aksen'}, color),
-      h('button',{class:'abtn',onclick:accountForm}, icon('user'),'Akun'),
+      !STATIC && h('button',{class:'abtn',onclick:accountForm}, icon('user'),'Akun'),
+      STATIC && h('a',{class:'abtn',href:'./',target:'_blank',rel:'noopener'}, icon('link'),'Lihat website'),
       h('button',{class:'abtn',onclick:logout}, icon('x'),'Keluar'),
       h('span',{class:'status',id:'status',title:'Versi halaman '+PAGE_VER}, prevStatus),
       h('span',{class:'status',style:'min-width:0;opacity:.6'}, PAGE_VER)
@@ -1897,8 +1898,9 @@ async function init(){
   if(!cl?.use){
     STATIC=true; const S=window.SITE_CONTENT;
     if(S){ C=deepMerge(clone(DEFAULT), clone(S.site||{})); projects=clone(S.projects||[]); }
-    if(location.hash==='#admin') history.replaceState(null,'',location.pathname+location.search);
-    done(); return;
+    done();
+    const tok=ghSavedToken(); if(tok) ghLogin(tok,{silent:true});
+    return;
   }
   const giveUp=setTimeout(()=>{ if(!booted){ done(); toast('Data belum bisa dimuat — menampilkan versi default'); } },10000);
   let u=null;
@@ -1913,7 +1915,9 @@ async function init(){
     if(authDoc && tok && tok===authDoc.hash.slice(0,24)) authed=true;
   }
   updateRole();
-
+  wireDb(giveUp);
+}
+function wireDb(giveUp){
   db.doc('site/main').onSnapshot(s=>{
     if(s.metadata.hasPendingWrites) return;
     /* data dari server terkunci (read-only): selalu salin dulu supaya bisa diubah */
@@ -1939,6 +1943,110 @@ async function init(){
     if(meId && !myLikes) myLikes=clone(likesDocs[meId]||{items:{}});
     if(booted) fillProjects();
   },()=>{});
+}
+
+/* ---------- ADMIN VIA GITHUB (dipakai saat website berjalan di GitHub Pages) ----------
+   Login memakai GitHub token milik pemilik repo. Token hanya disimpan di browser ini,
+   tidak pernah ditulis ke repo. Setiap "Simpan" = 1 commit ke content.js. */
+const GH={owner:'MasWisnu8', repo:'Portofolio-Upgrade', token:null, branch:null, sha:null, q:Promise.resolve()};
+(function(){ const m=location.hostname.match(/^([^.]+)\.github\.io$/i); const seg=location.pathname.split('/').filter(Boolean)[0];
+  if(m && seg && !/\.html?$/i.test(seg)){ GH.owner=m[1]; GH.repo=decodeURIComponent(seg); } })();
+const LOCAL_URL={};
+const STORE={docs:{}, subs:[]};
+function ghSavedToken(){ try{ return sessionStorage.getItem('pf_gh')||localStorage.getItem('pf_gh'); }catch{ return null; } }
+function ghForget(){ try{ sessionStorage.removeItem('pf_gh'); localStorage.removeItem('pf_gh'); }catch{} }
+async function ghApi(path,opt={}){
+  const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+path,{cache:'no-store',...opt,
+    headers:{'Authorization':'Bearer '+GH.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(opt.headers||{})}});
+  if(!r.ok){ const e=new Error('GitHub '+r.status); e.status=r.status;
+    e.code= r.status===401?'bad_token' : r.status===403||r.status===404?'invalid_argument' : r.status===409||r.status===422?'conflict' : 'unavailable'; throw e; }
+  return r.status===204? null : r.json();
+}
+const ghQueue=fn=>{ const run=GH.q.then(fn); GH.q=run.catch(()=>{}); return run; };
+const u8b64=u8=>{ let s=''; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s); };
+const txtB64=t=>u8b64(new TextEncoder().encode(t));
+const b64Txt=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+const blobB64=b=>new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result).split(',')[1]); fr.onerror=rej; fr.readAsDataURL(b); });
+function readContentJs(text){ const w={}; new Function('window',text)(w); return w; }
+function contentJsText(){
+  const site=STORE.docs['site/main']||{};
+  const projs=Object.keys(STORE.docs).filter(k=>/^projects\/[^/]+$/.test(k)).map(k=>({...STORE.docs[k], id:k.split('/')[1]}));
+  const priv=STORE.docs['private/files']||{};
+  return '/* Isi website. Diperbarui otomatis dari halaman admin (#admin). */\n'
+    +'window.SITE_CONTENT = '+JSON.stringify({site, projects:projs, private:priv},null,2)+';\n'
+    +'window.SITE_ASSETS = '+JSON.stringify(window.SITE_ASSETS||{},null,2)+';\n';
+}
+async function ghLoadContent(){
+  const f=await ghApi('/contents/content.js?ref='+encodeURIComponent(GH.branch));
+  GH.sha=f.sha; const w=readContentJs(b64Txt(f.content));
+  const S=w.SITE_CONTENT||{}; window.SITE_ASSETS={...(window.SITE_ASSETS||{}),...(w.SITE_ASSETS||{})};
+  STORE.docs={'site/main':clone(S.site||{})};
+  (S.projects||[]).forEach(p=>{ const {id,...rest}=p; if(id) STORE.docs['projects/'+id]=clone(rest); });
+  if(S.private) STORE.docs['private/files']=clone(S.private);
+}
+function ghCommitContent(msg){
+  return ghQueue(async()=>{
+    const put=()=>ghApi('/contents/content.js',{method:'PUT',body:JSON.stringify({message:msg||'Perbarui isi website dari admin',content:txtB64(contentJsText()),sha:GH.sha,branch:GH.branch})});
+    let r; try{ r=await put(); }
+    catch(e){ if(e.code!=='conflict') throw e; const f=await ghApi('/contents/content.js?ref='+encodeURIComponent(GH.branch)); GH.sha=f.sha; r=await put(); }
+    GH.sha=r.content.sha;
+  });
+}
+const deepPatch=(base,patch)=>{ const out=(base&&typeof base==='object'&&!Array.isArray(base))? {...base} : {};
+  for(const [k,v] of Object.entries(patch||{})) out[k]= (v&&typeof v==='object'&&!Array.isArray(v))? deepPatch(out[k],v) : clone(v); return out; };
+const PERSIST=/^(site\/main|projects\/[^/]+|private\/files)$/;
+function snapOf(path){ const d=STORE.docs[path]; return {exists:d!==undefined, id:path.split('/').pop(), data:()=>clone(d), metadata:{hasPendingWrites:false, fromCache:false}}; }
+function ghNotify(){ STORE.subs.slice().forEach(f=>{ try{ f(); }catch(e){ console.warn(e); } }); }
+async function ghWrite(path, fn, msg){
+  const before=STORE.docs[path]; fn();
+  if(!PERSIST.test(path)) return;
+  try{ await ghCommitContent(msg); }
+  catch(e){ if(before===undefined) delete STORE.docs[path]; else STORE.docs[path]=before; throw e; }
+  ghNotify();
+}
+const ghDb={
+  doc(path){ return {
+    get:async()=>snapOf(path),
+    set:v=>ghWrite(path,()=>{ STORE.docs[path]=clone(v); }, path.startsWith('projects/')? 'Simpan project: '+(v?.title||path) : null),
+    update:v=>{ if(STORE.docs[path]===undefined) return Promise.reject({code:'invalid_argument'}); return ghWrite(path,()=>{ STORE.docs[path]=deepPatch(STORE.docs[path],v); }); },
+    delete:()=>ghWrite(path,()=>{ delete STORE.docs[path]; }, 'Hapus '+path),
+    onSnapshot(cb){ const f=()=>cb(snapOf(path)); STORE.subs.push(f); f(); return ()=>{}; }
+  }; },
+  collection(name){ return { onSnapshot(cb){
+    const f=()=>cb({docs:Object.keys(STORE.docs).filter(k=>k.startsWith(name+'/')&&k.split('/').length===2).map(k=>({id:k.split('/')[1], data:()=>clone(STORE.docs[k])}))});
+    STORE.subs.push(f); f(); return ()=>{}; } }; }
+};
+const EXT={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','application/pdf':'pdf'};
+const ghAssets={
+  async upload(blob,{type}={}){
+    type=type||blob.type||'application/octet-stream';
+    const id=[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+    const path='assets/'+(type==='application/pdf'?'docs':'img')+'/'+id+'.'+(EXT[type]||'bin');
+    const content=await blobB64(blob);
+    await ghQueue(()=>ghApi('/contents/'+path,{method:'PUT',body:JSON.stringify({message:'Upload '+path,content,branch:GH.branch})}));
+    window.SITE_ASSETS[id]=path; LOCAL_URL[id]=URL.createObjectURL(blob);
+    return {id, sizeBytes:blob.size};
+  },
+  async delete(id){
+    const path=(window.SITE_ASSETS||{})[id]; if(!path) return;
+    await ghQueue(async()=>{ const f=await ghApi('/contents/'+path+'?ref='+encodeURIComponent(GH.branch));
+      await ghApi('/contents/'+path,{method:'DELETE',body:JSON.stringify({message:'Hapus '+path,sha:f.sha,branch:GH.branch})}); });
+    delete window.SITE_ASSETS[id];
+  }
+};
+async function ghLogin(token,{silent=false,remember=false}={}){
+  GH.token=token.trim();
+  try{
+    const r=await ghApi('');
+    if(!r.permissions?.push){ const e=new Error('no push'); e.code='invalid_argument'; throw e; }
+    GH.branch=r.default_branch;
+    await ghLoadContent();
+  }catch(e){ GH.token=null; if(silent){ ghForget(); return false; } throw e; }
+  try{ (remember? localStorage : sessionStorage).setItem('pf_gh',GH.token); }catch{}
+  db=ghDb; assets=ghAssets; canEditCap=true; authed=true;
+  updateRole();
+  if(!GH.wired){ GH.wired=true; wireDb(null); }
+  ghNotify(); render(); return true;
 }
 
 /* ---------- ROLE / AUTH ---------- */
@@ -1975,7 +2083,7 @@ async function checkPw(username,pw){
 }
 function rememberLogin(){ try{ sessionStorage.setItem('pf_auth',authDoc.hash.slice(0,24)); }catch{} }
 function enterAdmin(){ dlog('login',{}); authed=true; rememberLogin(); updateRole(); render(); window.scrollTo(0,0); }
-function logout(){ authed=false; try{ sessionStorage.removeItem('pf_auth'); }catch{} closeModal(); updateRole(); render(); toast('Kamu sudah keluar dari admin'); }
+function logout(){ authed=false; try{ sessionStorage.removeItem('pf_auth'); }catch{} if(STATIC){ ghForget(); GH.token=null; canEditCap=false; } closeModal(); updateRole(); render(); toast('Kamu sudah keluar dari admin'); }
 
 function pwField(ph, ac){
   const inp=h('input',{type:'password',placeholder:ph,autocomplete:ac,required:true});
@@ -1988,7 +2096,23 @@ function renderGate(){
   const guestLink=h('a',{href:'#',class:'glink',onclick:e=>{ e.preventDefault(); history.replaceState(null,'',location.pathname+location.search); window.dispatchEvent(new HashChangeEvent('hashchange')); }},'← Kembali ke tampilan tamu');
   const head=(t,sub)=>[h('div',{class:'glogo',html:IC.user}), h('h1',{class:'h gtitle'},t), h('p',{class:'gsub'},sub)];
   let body;
-  if(!db){
+  if(STATIC){
+    const tok=h('input',{type:'password',placeholder:'Tempel GitHub token di sini',autocomplete:'off',required:true,spellcheck:'false'});
+    const rem=h('input',{type:'checkbox',style:'width:auto'});
+    const btn=h('button',{class:'fbtn pri gbtn',type:'submit'},'Login');
+    body=[...head('Login Admin','Masuk dengan GitHub token milik pemilik website. Perubahan yang kamu simpan langsung tersimpan ke GitHub dan tampil untuk tamu sekitar 1–2 menit kemudian.'),
+      h('form',{class:'form',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
+        if(Date.now()<lockUntil){ msg.textContent='Terlalu banyak percobaan. Tunggu '+Math.ceil((lockUntil-Date.now())/1000)+' detik.'; return; }
+        btn.disabled=true; btn.textContent='Memeriksa…';
+        try{ await ghLogin(tok.value,{remember:rem.checked}); failCount=0; window.scrollTo(0,0); toast('Berhasil masuk ✓'); }
+        catch(err){ btn.disabled=false; btn.textContent='Login'; failCount++; if(failCount>=5){ failCount=0; lockUntil=Date.now()+30000; }
+          msg.textContent= err?.code==='bad_token' ? 'Token tidak valid atau sudah kedaluwarsa.' : err?.code==='invalid_argument' ? 'Token ini tidak punya izin menulis ke repo '+GH.owner+'/'+GH.repo+'.' : 'Tidak bisa terhubung ke GitHub. Coba lagi.'; tok.value=''; tok.focus(); }
+      }}, h('label',{},'GitHub token',tok),
+        h('label',{style:'display:flex;gap:10px;align-items:center;font-size:13px;letter-spacing:0'}, rem, 'Ingat di perangkat ini (jangan dicentang di komputer umum)'),
+        msg, btn),
+      h('a',{href:'https://github.com/settings/personal-access-tokens/new',target:'_blank',rel:'noopener',class:'glink'},'Belum punya token? Buat di GitHub →'),
+      guestLink];
+  } else if(!db){
     body=[...head('Halaman Admin','Masuk ke akun Claude kamu terlebih dahulu, lalu buka link admin ini lagi.'), guestLink];
   } else if(!window.crypto?.subtle){
     body=[...head('Halaman Admin','Browser ini tidak mendukung login aman. Coba buka di browser lain.'), guestLink];
