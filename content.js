@@ -261,25 +261,25 @@ window.SITE_CONTENT = {
       "id": "pmwvwuihkqdjr"
     },
     {
-      "body": "Melakukan traceability produk sesuai kebijakan halal yang ditetapkan oleh MUI dan melakukan pencegahan adanya penyimpangan halal di area pabrik atau produksi. Melakukan perbaikan berkesinambungan di segala bidang untuk proses produksi yang lebih baik.",
-      "category": "Audit Halal",
-      "cover": "022d3fe26b9c52e758f6e61dad1dafab",
-      "createdAt": 1795599117728,
+      "title": "Audit Halal Pabrik dan Toko",
+      "category": "Audit",
       "date": "2026-10-28",
+      "summary": "Sidak audit halal untuk perpanjangan sertifikat halal di toko dan pabrik, sekaligus meninjau kembali hal-hal yang berpotensi menjadi temuan audit untuk menjaga kehalalan produk Chocomory.",
+      "body": "Melakukan traceability produk sesuai kebijakan halal yang ditetapkan oleh MUI dan melakukan pencegahan adanya penyimpangan halal di area pabrik atau produksi. Melakukan perbaikan berkesinambungan di segala bidang untuk proses produksi yang lebih baik.",
       "link": "",
+      "cover": "022d3fe26b9c52e758f6e61dad1dafab",
       "photos": [
         {
-          "caption": "",
-          "id": "022d3fe26b9c52e758f6e61dad1dafab"
+          "id": "022d3fe26b9c52e758f6e61dad1dafab",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "080a80dfca7c6f57b335177ae27ede7a"
+          "id": "080a80dfca7c6f57b335177ae27ede7a",
+          "caption": ""
         }
       ],
-      "summary": "Sidak audit halal untuk perpanjangan sertifikat halal di toko dan pabrik, sekaligus meninjau kembali hal-hal yang berpotensi menjadi temuan audit untuk menjaga kehalalan produk Chocomory.",
-      "title": "Audit Halal Pabrik dan Toko",
-      "updatedAt": 1795599117728,
+      "updatedAt": 1795609529558,
+      "createdAt": 1795599117728,
       "id": "pmwvxcqe7lyd9"
     },
     {
