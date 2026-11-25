@@ -5,25 +5,25 @@ window.SITE_CONTENT = {
       "blocks": [
         {
           "img": "706d4281aedb1ab7467a93338bea5abb",
-          "text": "Membangun Operasional yang lincah, efisien dan terukur mengikuti perkembangan dan pertumbuhan bisnis",
+          "text": "Membangun operasional yang lincah, efisien, dan terukur seiring perkembangan dan pertumbuhan bisnis.",
           "title": "Visi"
         },
         {
           "img": "ccc8da303084de1cfc47036f075600b5",
-          "text": "1. Menjembatani Strategi dan Eksekusi\n2. Optimalisasi Proses dan Sumber daya\n3. Mengambil keputusan berbasis data\n4. Pengembangan budaya kerja yang tinggi\n5. Sinergi Komunikasi lintas-Departement",
+          "text": "1. Menjembatani strategi dan eksekusi\n2. Optimalisasi proses dan sumber daya\n3. Mengambil keputusan berbasis data\n4. Mengembangkan budaya kerja berkinerja tinggi\n5. Sinergi komunikasi lintas departemen",
           "title": "Misi"
         }
       ],
       "eyebrow": "Personal Branding",
-      "intro": "Membangun tim manufaktur yang tanggung, kolaboratif dan siap beradaptasi dengan target pertumbuhan.",
-      "title": "mengubah proses produksi yang kompleks menjadi alur kerja yang effisien, terstruktur dan tepat waktu"
+      "intro": "Membangun tim manufaktur yang tangguh, kolaboratif dan siap beradaptasi dengan target pertumbuhan.",
+      "title": "Mengubah proses produksi yang kompleks menjadi alur kerja yang efisien, terstruktur dan tepat waktu"
     },
     "cert": {
       "eyebrow": "Sertifikasi",
       "intro": "Pelatihan dan sertifikasi yang memperkuat kompetensi saya.",
       "items": [
         {
-          "desc": "The Webinar was Organized by PT REI Sistem Indonesia Group\nThis is only an Overview Prepare for ISO 14001:2026, ISO 9001:2026, ESG, Sustainability\nUpdate (Include SMK3, ISCC, RSPO, FSC, EUDR, Sedex Smeta & EcoVadis)",
+          "desc": "Webinar organized by PT REI Sistem Indonesia Group.\nOverview of preparing for ISO 14001:2026, ISO 9001:2026, ESG, and sustainability updates (including SMK3, ISCC, RSPO, FSC, EUDR, Sedex SMETA & EcoVadis).",
           "file": {
             "id": "c2ff52525db44c1ad42671b313928c65",
             "name": "[1-80] FREE WEBINAR [08 april 2026]-5.pdf",
@@ -31,7 +31,7 @@ window.SITE_CONTENT = {
             "type": "application/pdf"
           },
           "issuer": "REI (Respect Excellence Improvement)",
-          "name": "Overview of Prepare for ISO 14001:2026, ISO 9001:2026,",
+          "name": "Overview: Prepare for ISO 14001:2026 & ISO 9001:2026",
           "show": true,
           "year": "2026"
         },
@@ -137,7 +137,7 @@ window.SITE_CONTENT = {
       "intro": "Production professional with over 8 years of experience in the food manufacturing industry specializing in Production Management, PPIC, Warehouse Operations, Supply Chain Coordination, Inventory Management, Process Improvement, and Manufacturing Excellence.",
       "name": "Wisnu Pandu Hidayat",
       "photo": "a68603194e91912b9ae31c31ad2cb2ae",
-      "role": "Senior supervisor - production departement",
+      "role": "Senior Supervisor · Production Department",
       "signature": "Wisnu Pandu H",
       "stats": [
         {
@@ -192,7 +192,7 @@ window.SITE_CONTENT = {
       "intro": "Kemampuan teknis dan non-teknis yang saya kuasai dan gunakan dalam pekerjaan sehari-hari.",
       "items": [
         {
-          "desc": "Melakukan set-up produksi manufacturing\nPembuatan Pabrik (instalasi, utility dan man Power Planning)",
+          "desc": "Melakukan set-up produksi manufaktur.\nPembangunan pabrik (instalasi, utilitas, dan manpower planning).",
           "level": 95,
           "name": "Production Lean Manufacturing"
         },
@@ -207,12 +207,12 @@ window.SITE_CONTENT = {
           "name": "Komunikasi"
         },
         {
-          "desc": "Excel, PowerPoint, SAP Business one, SAP Hana,",
+          "desc": "Excel, PowerPoint, SAP Business One, SAP HANA.",
           "level": 85,
           "name": "Tools / Software"
         },
         {
-          "desc": "Claude Code, GPT, Agent AI",
+          "desc": "Claude Code, ChatGPT, dan AI Agent.",
           "level": 80,
           "name": "Software AI"
         }
@@ -222,7 +222,7 @@ window.SITE_CONTENT = {
   },
   "projects": [
     {
-      "body": "Banyak relasi yang kami dapat dari masing - masing vendor yang hadir, dari mulai FOTEC, MASEMA, BARO-MTA, OMETRACO, HUMEYO, STP-SINMAG, dan lain sebagainya, untuk perkembangan line produksi balacing.",
+      "body": "Banyak relasi yang kami dapat dari masing-masing vendor yang hadir, mulai dari FOTEC, MASEMA, BARO-MTA, OMETRACO, HUMEYO, STP-SINMAG, dan lain sebagainya, untuk pengembangan line produksi balancing.",
       "category": "Referensi Mesin set-up",
       "cover": "e7f1fbe69bf379e286cacdc155abd603",
       "createdAt": 1795598267673,
@@ -254,13 +254,13 @@ window.SITE_CONTENT = {
           "id": "2aca4b1e69e55665613c605e4127c51a"
         }
       ],
-      "summary": "Mencari relasi mesin untuk pabrik baru di Padalarang. dari banyak vendor yang hadir di Interfood",
+      "summary": "Mencari relasi vendor mesin untuk pabrik baru di Padalarang dari banyak vendor yang hadir di Interfood.",
       "title": "Kunjungan Pameran Interfood",
       "updatedAt": 1795600322243,
       "id": "pmwvwuihkqdjr"
     },
     {
-      "body": "Melakukan tracebility produk, sesuai dengan kebijakan halal yang di tetapkan oleh MUI dan melakukan pencegahan adanya penyimpangan halal di area pabrik atau produksi. melakukan perbaikan berkesinambungan di segala bidang untuk perkembangan proses produksi yang lebih baik",
+      "body": "Melakukan traceability produk sesuai kebijakan halal yang ditetapkan oleh MUI dan melakukan pencegahan adanya penyimpangan halal di area pabrik atau produksi. Melakukan perbaikan berkesinambungan di segala bidang untuk proses produksi yang lebih baik.",
       "category": "Audit Halal",
       "cover": "022d3fe26b9c52e758f6e61dad1dafab",
       "createdAt": 1795599117728,
@@ -276,13 +276,13 @@ window.SITE_CONTENT = {
           "id": "080a80dfca7c6f57b335177ae27ede7a"
         }
       ],
-      "summary": "Sidak audit halal untuk perpanjangan halal di toko dan pabrik dan merefresh kembali hal hal yang menjadi potensi audit untuk menjaga kehalalan produk Chocomory",
+      "summary": "Sidak audit halal untuk perpanjangan sertifikat halal di toko dan pabrik, sekaligus meninjau kembali hal-hal yang berpotensi menjadi temuan audit untuk menjaga kehalalan produk Chocomory.",
       "title": "Audit Halal Pabrik dan Toko",
       "updatedAt": 1795599117728,
       "id": "pmwvxcqe7lyd9"
     },
     {
-      "body": "Trial Mesin metal detector di uji dalam skala paling kecil hingga skala maximal produk yang digunakan,\ncatatan :\n1. Setiap produk mempunyai parameter yang berbeda meskipun isian produknya sama, namun parameter nya tetap akan berbeda.\n2. Sensitifitas yang di dapatkan adalah :\n  A. Besi (Fe) 0,8 mm\n  B. NonFe (NFe) 1 mm\n  C. Stainless (SS) 2 mm\n3. Mesin dalam proses pengujian dan tahap penawaran.",
+      "body": "Trial mesin metal detector diuji dari skala produk terkecil hingga terbesar.\nCatatan:\n1. Setiap produk mempunyai parameter yang berbeda, meskipun isian produknya sama.\n2. Sensitivitas yang didapatkan:\n  A. Besi (Fe) 0,8 mm\n  B. NonFe (NFe) 1 mm\n  C. Stainless (SS) 2 mm\n3. Mesin dalam tahap pengujian dan penawaran.",
       "category": "Trial Mesin",
       "cover": "948dc440b1deb1f4254e790b018e6216",
       "createdAt": 1795599432527,
@@ -298,13 +298,13 @@ window.SITE_CONTENT = {
           "id": "e114bde191c630990858c7a6f8321aac"
         }
       ],
-      "summary": "Trial Mesin Metal detector untuk Produk Chocomory",
+      "summary": "Trial mesin metal detector untuk produk Chocomory.",
       "title": "Trial Mesin Metal Detector - Anritsu",
       "updatedAt": 1795599432527,
       "id": "pmwvxjhan260a"
     },
     {
-      "body": "Pembukaan toko baru di braga kolaborasi dengan customer dan figur anime membuat toko semakin ramai dan meriah. Pembukaan toko ini memberikan akses lebih besar untuk mengenalkan produk chocomory sebagai oleh oleh khas Bandung yaitu Tiramisusu",
+      "body": "Pembukaan toko baru di Braga, berkolaborasi dengan customer dan figur anime, membuat toko semakin ramai dan meriah. Pembukaan toko ini memberikan akses lebih besar untuk mengenalkan produk Chocomory sebagai oleh-oleh khas Bandung, yaitu Tiramisusu.",
       "category": "GO - Toko",
       "cover": "41d8e564560131137d6130b0026d7c31",
       "createdAt": 1795599656357,
@@ -328,13 +328,13 @@ window.SITE_CONTENT = {
           "id": "41d8e564560131137d6130b0026d7c31"
         }
       ],
-      "summary": "Grand Opening Toko Satelit di Braga - BCW (Braga City Waly)",
+      "summary": "Grand opening toko satelit di Braga – BCW (Braga City Walk).",
       "title": "Pembukaan Toko Satelit Baru (Braga-BCW)",
       "updatedAt": 1795599656357,
       "id": "pmwvxoa05fllk"
     },
     {
-      "body": "Melakukan pengujian berbagai produk Chocomory untuk uji coba dengan hasil memuaskan ",
+      "body": "Melakukan uji coba berbagai produk Chocomory dengan hasil yang memuaskan.",
       "category": "Trial Mesin",
       "cover": "b6dc4844e9413a287c115a5f0916b457",
       "createdAt": 1795599898372,
@@ -354,8 +354,8 @@ window.SITE_CONTENT = {
           "id": "b6dc4844e9413a287c115a5f0916b457"
         }
       ],
-      "summary": "Trial mesin untuk set-up line produksi secara semi automation ",
-      "title": "Meeting Koordinasi pembelian Mesin Baru - MTA (Baro)",
+      "summary": "Trial mesin untuk set-up line produksi semi-otomatis.",
+      "title": "Meeting Koordinasi Pembelian Mesin Baru – MTA (Baro)",
       "updatedAt": 1795599898372,
       "id": "pmwvxtgqsgzbl"
     }
