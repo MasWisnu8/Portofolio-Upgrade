@@ -1,0 +1,9 @@
+{
+  "v": 1,
+  "kdf": "PBKDF2-SHA256",
+  "iter": 600000,
+  "salt": "oFhLkcnF8v0QBu6v4H2toQ==",
+  "iv": "Orq0RKZLmE1EJSaM",
+  "ct": "UK9a0gUdIhFieBQutIJtPg5ASAh4ZfhGfWJKkgqCD6puW2vPURbpcq2MQWb6E7kFsVYiehnYIigGbRUMj8YPQnzpG3fH57VLRjR3Cs9F8RtqhRcDZgNaHdVBnhXBiab+jIQ5VpJM1yxitMU5iQ==",
+  "updatedAt": "2026-11-25T11:57:45.640Z"
+}
