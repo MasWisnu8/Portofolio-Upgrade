@@ -612,7 +612,7 @@ const SKILL_ICONS = ['bolt','star','brief','chart','book','cap'];
 
 /* ---------- DEFAULT CONTENT ---------- */
 const DEFAULT = {
-  settings:{accent:'#ffffff', hidden:{}},
+  settings:{accent:'#ffffff', hidden:{}, goatcounter:''},
   nav:{brand:'Portofolio.', about:'Tentang', exp:'Pengalaman', edu:'Pendidikan', cert:'Sertifikasi', skill:'Keahlian', proj:'Project', contact:'Kontak', cta:'Hubungi Saya'},
   hero:{
     greet:'Halo, saya 👋', name:'Nama Kamu', role:'Jabatan · Bidang Keahlian',
@@ -1663,7 +1663,7 @@ async function toggleLike(pid){
 }
 function openProject(pid, refresh){
   const p=projects.find(x=>x.id===pid); if(!p) return;
-  if(!refresh){ openPid=pid; recordView(pid); }
+  if(!refresh){ openPid=pid; recordView(pid); if(STATIC) gcEvent('Project: '+(p.title||pid)); }
   openPid=pid;
   const liked=!!myLikes?.items?.[pid]; const lc=likeCount(pid); const url=safeUrl(p.link);
   const admin = isAdmin ? adminStatsBlock(pid) : null;
@@ -1803,7 +1803,7 @@ function renderAdmin(){
       h('div',{class:'tag'}, h('i'), h('span',{},'Admin')),
       h('button',{class:'abtn'+(preview?' on':''),onclick:togglePreview}, icon(preview?'edit':'eye'), preview?'Kembali ke Admin':'Pratinjau Tamu'),
       !preview && h('button',{class:'abtn',onclick:()=>projectForm()}, icon('plus'),'Project'),
-      !STATIC && h('button',{class:'abtn',onclick:openStats}, icon('chart'),'Statistik'),
+      h('button',{class:'abtn',onclick:STATIC? openGcStats : openStats}, icon('chart'),'Statistik'),
       !preview && h('label',{class:'abtn',title:'Warna aksen'}, color),
       !STATIC && h('button',{class:'abtn',onclick:accountForm}, icon('user'),'Akun'),
       STATIC && h('a',{class:'abtn',href:'./',target:'_blank',rel:'noopener'}, icon('link'),'Lihat website'),
@@ -1898,7 +1898,7 @@ async function init(){
   if(!cl?.use){
     STATIC=true; const S=window.SITE_CONTENT;
     if(S){ C=deepMerge(clone(DEFAULT), clone(S.site||{})); projects=clone(S.projects||[]); }
-    done();
+    done(); gcInit();
     const tok=ghSavedToken(); if(tok) ghLogin(tok,{silent:true});
     return;
   }
@@ -2047,6 +2047,44 @@ async function ghLogin(token,{silent=false,remember=false}={}){
   updateRole();
   if(!GH.wired){ GH.wired=true; wireDb(null); }
   ghNotify(); render(); return true;
+}
+
+/* ---------- PENGHITUNG PENGUNJUNG (GoatCounter, gratis & tanpa cookie) ---------- */
+const gcCode=()=>{ const c=String(C.settings.goatcounter||'').trim().toLowerCase(); return /^[a-z0-9][a-z0-9-]{1,48}$/.test(c)? c : ''; };
+const gcBase=()=>'https://'+gcCode()+'.goatcounter.com';
+function gcInit(){
+  const code=gcCode(); if(!code || route()==='admin' || ghSavedToken()) return;
+  if(/^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname)) return;
+  const sc=document.createElement('script'); sc.async=true; sc.src='https://gc.zgo.at/count.js';
+  sc.dataset.goatcounter=gcBase()+'/count'; document.head.append(sc);
+}
+function gcEvent(name){ try{ if(!isAdmin && window.goatcounter?.count) window.goatcounter.count({path:name.slice(0,200), title:name.slice(0,200), event:true}); }catch{} }
+function openGcStats(){
+  const code=gcCode();
+  const inp=h('input',{type:'text',value:code,placeholder:'mis. wisnupandu',autocomplete:'off',spellcheck:'false'});
+  const msg=h('p',{class:'gmsg'});
+  const kpis=h('div',{class:'kpis'});
+  const save=h('button',{class:'fbtn pri',type:'submit'}, icon('save'),' Simpan kode');
+  openModal(h('div',{class:'mpad'},
+    h('h3',{class:'h',style:'font-size:22px'},'Statistik Pengunjung'),
+    h('p',{class:'muted',style:'margin-top:6px'},'Dihitung gratis lewat GoatCounter. Yang terlihat: jumlah kunjungan, halaman & project yang dibuka, negara/daerah, perangkat, browser, dan dari mana pengunjung datang (Google, LinkedIn, WhatsApp, dll). Nama atau identitas pengunjung tidak bisa diketahui — ini demi privasi mereka. Kunjunganmu sendiri saat login admin tidak dihitung.'),
+    code && kpis,
+    code && h('div',{class:'dacts'}, h('a',{class:'btn pri',href:gcBase(),target:'_blank',rel:'noopener'}, icon('chart'),'Buka dashboard lengkap')),
+    h('form',{class:'form',style:'margin-top:26px',onsubmit:async e=>{ e.preventDefault(); msg.textContent='';
+        const v=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\.goatcounter\.com.*$/,'');
+        if(v && !/^[a-z0-9][a-z0-9-]{1,48}$/.test(v)){ msg.textContent='Kode hanya boleh huruf kecil, angka, dan tanda minus.'; return; }
+        save.disabled=true; const ok=await persistQuick(c=>{ c.settings.goatcounter=v; }, v?'Kode GoatCounter tersimpan ✓':'Penghitung dimatikan', true, ['settings.goatcounter']);
+        save.disabled=false; if(ok){ closeModal(); openGcStats(); } }},
+      h('label',{},'Kode GoatCounter (bagian depan alamat dashboard: KODE.goatcounter.com)', inp), msg,
+      !code && h('p',{class:'muted',style:'font-size:12.5px'},'Belum punya? Daftar gratis di goatcounter.com/signup, pilih kode, lalu tempel kodenya di sini.'),
+      h('div',{class:'fact'}, h('a',{class:'fbtn',href:'https://www.goatcounter.com/signup',target:'_blank',rel:'noopener'},'Daftar GoatCounter'), save))
+  ));
+  if(code){
+    put(kpis, h('div',{class:'kpi'}, h('b',{},'…'), h('span',{},'Total kunjungan')));
+    fetch(gcBase()+'/counter/TOTAL.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      put(kpis, h('div',{class:'kpi'}, h('b',{},d.count||'0'), h('span',{},'Total kunjungan')), d.count_unique!=null && h('div',{class:'kpi'}, h('b',{},d.count_unique), h('span',{},'Pengunjung unik')));
+    }).catch(()=>put(kpis, h('p',{class:'muted',style:'grid-column:1/-1;font-size:12.5px'},'Angka ringkas belum bisa ditampilkan di sini. Di dashboard GoatCounter buka Settings → centang "Allow adding visitor counts on your website", atau langsung klik "Buka dashboard lengkap".')));
+  }
 }
 
 /* ---------- ROLE / AUTH ---------- */
