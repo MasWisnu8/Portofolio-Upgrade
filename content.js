@@ -1,4 +1,4 @@
-/* Isi website. Edit file ini untuk mengubah teks, project, dan foto. */
+/* Isi website. Diperbarui otomatis dari halaman admin (#admin). */
 window.SITE_CONTENT = {
   "site": {
     "brand": {
@@ -359,8 +359,35 @@ window.SITE_CONTENT = {
       "title": "Meeting Koordinasi Pembelian Mesin Baru – MTA (Baro)",
       "updatedAt": 1795599898372,
       "id": "pmwvxtgqsgzbl"
+    },
+    {
+      "title": "Trial Mesin untuk set-up pabrik baru (MASEMA)",
+      "category": "Trial Mesin",
+      "date": "2026-04-29",
+      "summary": "Melakukan trial skala 1 batch produksi",
+      "body": "Melakukan trial untuk menghitung :\n1. Speed Mesin / Hour\n2. Kapasitas Mesin\n3. Utility Mesin\n4. Kebutuhan Manpower untuk mesin\n5. Tools pendukung lainnya",
+      "link": "",
+      "cover": "f55e5dfc75d57fe306ee52f1ec24497c",
+      "photos": [
+        {
+          "id": "df94159b06a075559ede2f3b0959df05",
+          "caption": ""
+        },
+        {
+          "id": "f55e5dfc75d57fe306ee52f1ec24497c",
+          "caption": ""
+        },
+        {
+          "id": "2f3cf949fc1d578040e03642a1285317",
+          "caption": ""
+        }
+      ],
+      "updatedAt": 1795608221397,
+      "createdAt": 1795608221397,
+      "id": "pmww2rutxjmjb"
     }
-  ]
+  ],
+  "private": {}
 };
 window.SITE_ASSETS = {
   "022d3fe26b9c52e758f6e61dad1dafab": "assets/img/022d3fe26b9c52e758f6e61dad1dafab.jpg",
@@ -387,5 +414,9 @@ window.SITE_ASSETS = {
   "125ed05164057b909675a56543e15086": "assets/docs/125ed05164057b909675a56543e15086.pdf",
   "b46660402db8d2e2118b27359bbccd59": "assets/docs/b46660402db8d2e2118b27359bbccd59.pdf",
   "c2ff52525db44c1ad42671b313928c65": "assets/docs/c2ff52525db44c1ad42671b313928c65.pdf",
-  "c8668e6bafe58e2e704a525f9af5050e": "assets/docs/c8668e6bafe58e2e704a525f9af5050e.pdf"
+  "c8668e6bafe58e2e704a525f9af5050e": "assets/docs/c8668e6bafe58e2e704a525f9af5050e.pdf",
+  "09e22d70b216143501a41f67df80855a": "assets/img/09e22d70b216143501a41f67df80855a.jpg",
+  "df94159b06a075559ede2f3b0959df05": "assets/img/df94159b06a075559ede2f3b0959df05.jpg",
+  "f55e5dfc75d57fe306ee52f1ec24497c": "assets/img/f55e5dfc75d57fe306ee52f1ec24497c.jpg",
+  "2f3cf949fc1d578040e03642a1285317": "assets/img/2f3cf949fc1d578040e03642a1285317.jpg"
 };
