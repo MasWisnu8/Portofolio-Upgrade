@@ -223,41 +223,41 @@ window.SITE_CONTENT = {
   },
   "projects": [
     {
-      "body": "Banyak relasi yang kami dapat dari masing-masing vendor yang hadir, mulai dari FOTEC, MASEMA, BARO-MTA, OMETRACO, HUMEYO, STP-SINMAG, dan lain sebagainya, untuk pengembangan line produksi balancing.",
-      "category": "Referensi Mesin set-up",
-      "cover": "e7f1fbe69bf379e286cacdc155abd603",
-      "createdAt": 1795598267673,
+      "title": "Kunjungan Pameran Interfood",
+      "category": "Expo-Pameran",
       "date": "2026-11-04",
+      "summary": "Mencari relasi vendor mesin untuk pabrik baru di Padalarang dari banyak vendor yang hadir di Interfood.",
+      "body": "Banyak relasi yang kami dapat dari masing-masing vendor yang hadir, mulai dari FOTEC, MASEMA, BARO-MTA, OMETRACO, HUMEYO, STP-SINMAG, dan lain sebagainya, untuk pengembangan line produksi balancing.",
       "link": "",
+      "cover": "e7f1fbe69bf379e286cacdc155abd603",
       "photos": [
         {
-          "caption": "",
-          "id": "d154209b2a07a9b650f1fc95396717b4"
+          "id": "d154209b2a07a9b650f1fc95396717b4",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "92ffd8afce0d1b80ad07034175402443"
+          "id": "92ffd8afce0d1b80ad07034175402443",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "e7f1fbe69bf379e286cacdc155abd603"
+          "id": "e7f1fbe69bf379e286cacdc155abd603",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "bb2f2935d5afce40c304312d72c3e030"
+          "id": "bb2f2935d5afce40c304312d72c3e030",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "112121eec842c4f63ec055755d3dad8c"
+          "id": "112121eec842c4f63ec055755d3dad8c",
+          "caption": ""
         },
         {
-          "caption": "",
-          "id": "2aca4b1e69e55665613c605e4127c51a"
+          "id": "2aca4b1e69e55665613c605e4127c51a",
+          "caption": ""
         }
       ],
-      "summary": "Mencari relasi vendor mesin untuk pabrik baru di Padalarang dari banyak vendor yang hadir di Interfood.",
-      "title": "Kunjungan Pameran Interfood",
-      "updatedAt": 1795600322243,
+      "updatedAt": 1795609501758,
+      "createdAt": 1795598267673,
       "id": "pmwvwuihkqdjr"
     },
     {
