@@ -433,6 +433,28 @@ window.SITE_CONTENT = {
       "updatedAt": 1795608808081,
       "createdAt": 1795608808081,
       "id": "pmww34fipm8j1"
+    },
+    {
+      "title": "Persiapan pembukaan toko baru Pasteur dan penyimpanan gudang",
+      "category": "Survey",
+      "date": "2026-08-20",
+      "summary": "Melakukan koordinasi antar divisi untuk persiapan project toko baru di Pasteur",
+      "body": "Menghitung kebutuhan dan ekspansi gudang ke pasteur, membagi skema pembagian pengiriman dan perhitungan kapasitas gudang kering dan chiller untuk penyimpanan produk",
+      "link": "",
+      "cover": "540cb46df44af505de00e8aaf7a8da40",
+      "photos": [
+        {
+          "id": "38f9d8d25efe664e81ab0d3789160920",
+          "caption": ""
+        },
+        {
+          "id": "540cb46df44af505de00e8aaf7a8da40",
+          "caption": ""
+        }
+      ],
+      "updatedAt": 1795609132072,
+      "createdAt": 1795609132072,
+      "id": "pmww3bdig0rch"
     }
   ],
   "private": {}
@@ -471,5 +493,7 @@ window.SITE_ASSETS = {
   "9da54f3a4a78ba29b27305c04a14dcc0": "assets/img/9da54f3a4a78ba29b27305c04a14dcc0.jpg",
   "6accee7d72a9b38c2c1266f167f968da": "assets/img/6accee7d72a9b38c2c1266f167f968da.jpg",
   "4d20efee2906b37bae45f853d46f3d9f": "assets/img/4d20efee2906b37bae45f853d46f3d9f.jpg",
-  "404e176e3f454e910c66c228439412c8": "assets/img/404e176e3f454e910c66c228439412c8.jpg"
+  "404e176e3f454e910c66c228439412c8": "assets/img/404e176e3f454e910c66c228439412c8.jpg",
+  "38f9d8d25efe664e81ab0d3789160920": "assets/img/38f9d8d25efe664e81ab0d3789160920.jpg",
+  "540cb46df44af505de00e8aaf7a8da40": "assets/img/540cb46df44af505de00e8aaf7a8da40.jpg"
 };
