@@ -455,6 +455,32 @@ window.SITE_CONTENT = {
       "updatedAt": 1795609132072,
       "createdAt": 1795609132072,
       "id": "pmww3bdig0rch"
+    },
+    {
+      "title": "Perbaikan Lantai di area luar ruang Produksi",
+      "category": "Project",
+      "date": "2026-08-12",
+      "summary": "Memimpin pengerjaan project perbaikan lantai",
+      "body": "Perbaikan lantai yang sebelumnya menggunakan coran semen yang sudah banyak terjadi gompal atau defect, diperbaharui menggunakan lapisan U-crete dengan ketebalan 3mm yang dilalui beban berat hingga 1,5 ton ",
+      "link": "",
+      "cover": "50318847c3ca6fa3b8c46ba17b28e8f1",
+      "photos": [
+        {
+          "id": "744fbbd425a1c2de808b169d506b4385",
+          "caption": ""
+        },
+        {
+          "id": "1f26c9a72f79ff3fd501049772bb08db",
+          "caption": ""
+        },
+        {
+          "id": "50318847c3ca6fa3b8c46ba17b28e8f1",
+          "caption": ""
+        }
+      ],
+      "updatedAt": 1795609455759,
+      "createdAt": 1795609455759,
+      "id": "pmww3ib9r4ari"
     }
   ],
   "private": {}
@@ -495,5 +521,8 @@ window.SITE_ASSETS = {
   "4d20efee2906b37bae45f853d46f3d9f": "assets/img/4d20efee2906b37bae45f853d46f3d9f.jpg",
   "404e176e3f454e910c66c228439412c8": "assets/img/404e176e3f454e910c66c228439412c8.jpg",
   "38f9d8d25efe664e81ab0d3789160920": "assets/img/38f9d8d25efe664e81ab0d3789160920.jpg",
-  "540cb46df44af505de00e8aaf7a8da40": "assets/img/540cb46df44af505de00e8aaf7a8da40.jpg"
+  "540cb46df44af505de00e8aaf7a8da40": "assets/img/540cb46df44af505de00e8aaf7a8da40.jpg",
+  "744fbbd425a1c2de808b169d506b4385": "assets/img/744fbbd425a1c2de808b169d506b4385.jpg",
+  "1f26c9a72f79ff3fd501049772bb08db": "assets/img/1f26c9a72f79ff3fd501049772bb08db.jpg",
+  "50318847c3ca6fa3b8c46ba17b28e8f1": "assets/img/50318847c3ca6fa3b8c46ba17b28e8f1.jpg"
 };
